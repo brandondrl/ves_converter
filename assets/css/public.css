@@ -1,0 +1,150 @@
+/* Public styles for VES Converter */
+.ves-converter-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.ves-converter-container h2 {
+    margin-top: 0;
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.ves-converter-rates {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.ves-converter-rate-selector {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.ves-converter-rate-selector label {
+    font-weight: bold;
+    flex: 1 0 150px;
+}
+
+.ves-converter-rate-selector select {
+    flex: 2 0 200px;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.ves-converter-form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.ves-converter-input-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.ves-converter-input-group label {
+    font-weight: bold;
+    flex: 1 0 150px;
+}
+
+.ves-converter-input-group input {
+    flex: 2 0 200px;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.ves-converter-button {
+    background-color: #0073aa;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.ves-converter-button:hover {
+    background-color: #005a87;
+}
+
+.ves-converter-result {
+    margin-top: 20px;
+}
+
+.ves-converter-result-container {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.ves-converter-result-container h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.ves-converter-history {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.ves-converter-history h3 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.ves-converter-history-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ves-converter-history-table th, 
+.ves-converter-history-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.ves-converter-history-table th {
+    background-color: #f5f5f5;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .ves-converter-input-group,
+    .ves-converter-rate-selector {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .ves-converter-input-group label,
+    .ves-converter-rate-selector label,
+    .ves-converter-input-group input,
+    .ves-converter-rate-selector select {
+        flex: auto;
+    }
+} 

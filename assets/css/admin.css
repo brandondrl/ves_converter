@@ -1,0 +1,65 @@
+/* Admin styles for VES Converter */
+.ves-converter-admin-content {
+    margin-top: 20px;
+}
+
+.ves-converter-admin-header {
+    margin-bottom: 20px;
+}
+
+.ves-converter-admin-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.ves-converter-admin-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    min-width: 300px;
+}
+
+.ves-converter-admin-card h3 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.ves-converter-admin-section {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.ves-converter-api-endpoints {
+    margin-top: 15px;
+}
+
+.ves-converter-api-endpoint {
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 3px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.ves-converter-api-endpoint h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.ves-converter-api-endpoint code {
+    display: block;
+    padding: 10px;
+    background: #f1f1f1;
+    border-radius: 3px;
+    margin-bottom: 10px;
+} 
