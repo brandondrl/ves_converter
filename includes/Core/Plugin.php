@@ -16,9 +16,6 @@ class Plugin {
         $this->define_public_hooks();
         $this->register_api_endpoints();
         $this->register_shortcodes();
-        
-        // Register activation hook
-        register_activation_hook(VES_CONVERTER_PLUGIN_DIR . 'ves-converter.php', [$this, 'activate']);
     }
 
     /**
@@ -27,9 +24,6 @@ class Plugin {
     private function load_dependencies() {
         // Load Admin class
         require_once VES_CONVERTER_PLUGIN_DIR . 'includes/Admin/AdminPage.php';
-        
-        // Load Models
-        require_once VES_CONVERTER_PLUGIN_DIR . 'includes/Models/ConverterModel.php';
         
         // Load API
         require_once VES_CONVERTER_PLUGIN_DIR . 'includes/API/APIEndpoint.php';
@@ -93,13 +87,5 @@ class Plugin {
             VES_CONVERTER_VERSION,
             true
         );
-    }
-    
-    /**
-     * Plugin activation
-     */
-    public function activate() {
-        // Create database tables
-        \VesConverter\Models\ConverterModel::create_tables();
     }
 } 

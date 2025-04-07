@@ -33,8 +33,6 @@ class ConverterModel {
             user_id bigint(20) NOT NULL,
             rate_type varchar(50) NOT NULL,
             rate_value decimal(20,10) NOT NULL,
-            amount_usd decimal(20,2) NOT NULL,
-            amount_ves decimal(20,2) NOT NULL,
             date_created datetime NOT NULL,
             PRIMARY KEY (id)
         ) $charset_collate;";
@@ -56,8 +54,6 @@ class ConverterModel {
             'user_id' => get_current_user_id(),
             'rate_type' => '',
             'rate_value' => 0,
-            'amount_usd' => 0,
-            'amount_ves' => 0,
             'date_created' => current_time('mysql')
         ];
         

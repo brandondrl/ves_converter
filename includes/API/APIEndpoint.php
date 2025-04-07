@@ -52,7 +52,7 @@ class APIEndpoint {
         $params = $request->get_params();
         
         // Validate required fields
-        $required_fields = ['rate_type', 'rate_value', 'amount_usd', 'amount_ves'];
+        $required_fields = ['rate_type', 'rate_value'];
         foreach ($required_fields as $field) {
             if (empty($params[$field])) {
                 return new \WP_REST_Response([
@@ -66,9 +66,7 @@ class APIEndpoint {
         $model = new ConverterModel();
         $result = $model->save_conversion([
             'rate_type' => sanitize_text_field($params['rate_type']),
-            'rate_value' => floatval($params['rate_value']),
-            'amount_usd' => floatval($params['amount_usd']),
-            'amount_ves' => floatval($params['amount_ves'])
+            'rate_value' => floatval($params['rate_value'])
         ]);
         
         if ($result) {

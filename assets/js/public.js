@@ -144,9 +144,7 @@
             type: 'POST',
             data: {
                 rate_type: currentRateType,
-                rate_value: currentRateValue,
-                amount_usd: currentUSD,
-                amount_ves: currentVES
+                rate_value: currentRateValue
             },
             success: function(response) {
                 if (response.success) {
@@ -196,18 +194,16 @@
         let html = '<table class="ves-converter-history-table">';
         html += '<thead><tr>';
         html += '<th>Date</th>';
-        html += '<th>Rate</th>';
-        html += '<th>USD</th>';
-        html += '<th>VES</th>';
+        html += '<th>Rate Type</th>';
+        html += '<th>Rate Value</th>';
         html += '</tr></thead>';
         html += '<tbody>';
         
         data.forEach(function(item) {
             html += '<tr>';
             html += '<td>' + formatDate(item.date_created) + '</td>';
-            html += '<td>' + getRateTypeName(item.rate_type) + ' (' + parseFloat(item.rate_value).toFixed(2) + ')</td>';
-            html += '<td>' + parseFloat(item.amount_usd).toFixed(2) + '</td>';
-            html += '<td>' + parseFloat(item.amount_ves).toFixed(2) + '</td>';
+            html += '<td>' + getRateTypeName(item.rate_type) + '</td>';
+            html += '<td>' + parseFloat(item.rate_value).toFixed(2) + '</td>';
             html += '</tr>';
         });
         
