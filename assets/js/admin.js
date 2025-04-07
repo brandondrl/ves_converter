@@ -11,10 +11,21 @@
             const endpoint = $(this).data('endpoint');
             copyToClipboard(endpoint);
             
-            // Show success message
-            $(this).text('Copiado!');
+            // Show success message using SweetAlert2
+            const originalText = $(this).text();
+            $(this).text('Copied!');
+            
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Endpoint copied to clipboard',
+                showConfirmButton: false,
+                timer: 1500
+            });
+            
             setTimeout(() => {
-                $(this).text('Copiar');
+                $(this).text(originalText);
             }, 2000);
         });
         
@@ -33,31 +44,39 @@
                     default_rate_type: defaultRateType
                 },
                 beforeSend: function() {
-                    $('#submit').prop('disabled', true).val('Guardando...');
+                    $('#submit').prop('disabled', true).val('Saving...');
                 },
                 success: function(response) {
-                    $('#submit').prop('disabled', false).val('Guardar Cambios');
+                    $('#submit').prop('disabled', false).val('Save Changes');
                     
                     if (response.success) {
                         // Show success message
-                        $('<div class="notice notice-success is-dismissible"><p>' + response.data.message + '</p></div>')
-                            .insertBefore('form')
-                            .delay(3000)
-                            .fadeOut(function() {
-                                $(this).remove();
-                            });
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.data.message,
+                            confirmButtonText: 'OK'
+                        });
                     } else {
                         // Show error message
-                        $('<div class="notice notice-error is-dismissible"><p>' + response.data.message + '</p></div>')
-                            .insertBefore('form');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.data.message,
+                            confirmButtonText: 'OK'
+                        });
                     }
                 },
                 error: function() {
-                    $('#submit').prop('disabled', false).val('Guardar Cambios');
+                    $('#submit').prop('disabled', false).val('Save Changes');
                     
                     // Show error message
-                    $('<div class="notice notice-error is-dismissible"><p>Ocurrió un error al guardar la configuración.</p></div>')
-                        .insertBefore('form');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while saving the settings.',
+                        confirmButtonText: 'OK'
+                    });
                 }
             });
         });

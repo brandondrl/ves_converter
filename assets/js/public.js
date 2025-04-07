@@ -132,7 +132,7 @@
     function showResult() {
         const resultText = currentUSD.toFixed(2) + ' USD = ' + currentVES.toFixed(2) + ' VES (Rate: ' + currentRateValue.toFixed(2) + ')';
         $('#result-text').text(resultText);
-        $('#result-container').show();
+        $('#result-container').removeClass('hidden').addClass('block');
     }
     
     /**
@@ -187,23 +187,24 @@
      */
     function renderHistory(data) {
         if (!data.length) {
-            $('#history-container').html('<p>No conversions in history</p>');
+            $('#history-container').html('<p class="text-gray-600">No conversions in history</p>');
             return;
         }
         
-        let html = '<table class="ves-converter-history-table">';
-        html += '<thead><tr>';
-        html += '<th>Date</th>';
-        html += '<th>Rate Type</th>';
-        html += '<th>Rate Value</th>';
+        let html = '<table class="min-w-full divide-y divide-gray-200">';
+        html += '<thead class="bg-gray-50"><tr>';
+        html += '<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>';
+        html += '<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate Type</th>';
+        html += '<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate Value</th>';
         html += '</tr></thead>';
-        html += '<tbody>';
+        html += '<tbody class="bg-white divide-y divide-gray-200">';
         
-        data.forEach(function(item) {
-            html += '<tr>';
-            html += '<td>' + formatDate(item.date_created) + '</td>';
-            html += '<td>' + getRateTypeName(item.rate_type) + '</td>';
-            html += '<td>' + parseFloat(item.rate_value).toFixed(2) + '</td>';
+        data.forEach(function(item, index) {
+            const bgClass = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+            html += '<tr class="' + bgClass + '">';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + formatDate(item.date_created) + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">' + getRateTypeName(item.rate_type) + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + parseFloat(item.rate_value).toFixed(2) + '</td>';
             html += '</tr>';
         });
         
@@ -251,7 +252,12 @@
      * @param {string} message Error message
      */
     function showError(message) {
-        alert(message);
+        Swal.fire({
+            title: 'Error',
+            text: message,
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
     }
     
     /**
@@ -260,7 +266,12 @@
      * @param {string} message Success message
      */
     function showSuccess(message) {
-        alert(message);
+        Swal.fire({
+            title: 'Success',
+            text: message,
+            icon: 'success',
+            confirmButtonText: 'OK'
+        });
     }
     
     /**

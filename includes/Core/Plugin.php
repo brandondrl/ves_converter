@@ -73,17 +73,47 @@ class Plugin {
      * Register public scripts and styles
      */
     public function enqueue_public_scripts() {
+        // Generate version with timestamp to avoid caching
+        $version = VES_CONVERTER_VERSION . '.' . time();
+
+        // Enqueue SweetAlert2 CSS
+        wp_enqueue_style(
+            'sweetalert2',
+            VES_CONVERTER_PLUGIN_URL . 'assets/css/sweetalert2.min.css',
+            [],
+            $version
+        );
+
+        // Enqueue Tailwind CSS
+        wp_enqueue_style(
+            'ves-converter-tailwind',
+            VES_CONVERTER_PLUGIN_URL . 'assets/css/tailwind.min.css',
+            [],
+            $version
+        );
+
+        // Enqueue public CSS
         wp_enqueue_style(
             'ves-converter-public',
             VES_CONVERTER_PLUGIN_URL . 'assets/css/public.css',
-            [],
-            VES_CONVERTER_VERSION
+            ['ves-converter-tailwind', 'sweetalert2'],
+            $version
         );
 
+        // Enqueue SweetAlert2
+        wp_enqueue_script(
+            'sweetalert2',
+            VES_CONVERTER_PLUGIN_URL . 'assets/js/sweetalert2.all.min.js',
+            [],
+            VES_CONVERTER_VERSION,
+            true
+        );
+
+        // Enqueue public JS
         wp_enqueue_script(
             'ves-converter-public',
             VES_CONVERTER_PLUGIN_URL . 'assets/js/public.js',
-            ['jquery'],
+            ['jquery', 'sweetalert2'],
             VES_CONVERTER_VERSION,
             true
         );
