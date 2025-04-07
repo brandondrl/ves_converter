@@ -7,9 +7,9 @@
             <p class="mt-2"><?php _e('Configure and manage the Bolivar to Dollar converter.', 'ves-converter'); ?></p>
         </div>
         
-        <div class="flex justify-between">
+        <div class="flex justify-between gap-4">
             <!-- Configuration -->
-            <div class="bg-white rounded shadow">
+            <div class="bg-white rounded shadow flex-1">
                 <div class="bg-gray-50 p-4 border-b">
                     <h3 class="font-medium"><?php _e('Set Your Rate Today', 'ves-converter'); ?></h3>
                 </div>
@@ -36,7 +36,7 @@
             </div>
             
             <!-- Rates Information -->
-            <div class="bg-white rounded shadow">
+            <div class="bg-white rounded shadow flex-1">
                 <div class="bg-gray-50 p-4 border-b">
                     <h3 class="font-medium"><?php _e('Current Exchange Rates', 'ves-converter'); ?></h3>
                 </div>
@@ -86,7 +86,7 @@
         </div>
         
         <!-- Historical Rates Table -->
-        <div class="bg-white rounded shadow mb-8">
+        <div class="bg-white rounded shadow mt-4">
             <div class="bg-gray-50 p-4 border-b">
                 <h3 class="font-medium"><?php _e('Historical Rate Records', 'ves-converter'); ?></h3>
             </div>
