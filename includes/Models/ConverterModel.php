@@ -83,4 +83,24 @@ class ConverterModel {
         
         return $wpdb->get_results($query);
     }
+
+    /**
+     * Get all rates saved in the database
+     * 
+     * @param int $limit Maximum number of records to return
+     * @return array Array of rate records
+     */
+    public static function get_all_rates($limit = 50) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'ves_converter';
+        
+        $query = $wpdb->prepare(
+            "SELECT * FROM {$table_name} 
+            ORDER BY date_created DESC 
+            LIMIT %d",
+            $limit
+        );
+        
+        return $wpdb->get_results($query, ARRAY_A);
+    }
 } 

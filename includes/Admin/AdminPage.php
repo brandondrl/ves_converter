@@ -1,6 +1,8 @@
 <?php
 namespace VesConverter\Admin;
 
+use VesConverter\Models\ConverterModel;
+
 /**
  * The admin-specific functionality of the plugin
  */
@@ -9,6 +11,7 @@ class AdminPage {
      * Add admin menu item
      */
     public function add_admin_menu() {
+        // Add main menu page
         add_menu_page(
             'VES Converter', 
             'VES Converter', 
@@ -18,14 +21,35 @@ class AdminPage {
             'dashicons-money-alt', 
             25
         );
+
+        // Add Statistics submenu
+        add_submenu_page(
+            'ves-converter',
+            'Statistics & API',
+            'Statistics & API',
+            'manage_options',
+            'ves-converter-stats',
+            [$this, 'display_stats_page']
+        );
     }
 
     /**
-     * Display the admin page
+     * Display the main admin page
      */
     public function display_admin_page() {
+        // Get saved rate history
+        $rate_history = ConverterModel::get_all_rates(20);
+        
         // Include admin view
         include VES_CONVERTER_PLUGIN_DIR . 'views/admin/main.php';
+    }
+
+    /**
+     * Display the statistics & API page
+     */
+    public function display_stats_page() {
+        // Include stats view
+        include VES_CONVERTER_PLUGIN_DIR . 'views/admin/stats.php';
     }
 
     /**
