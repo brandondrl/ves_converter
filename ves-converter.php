@@ -30,8 +30,38 @@ register_activation_hook(__FILE__, 'ves_converter_activate');
  * Plugin activation
  */
 function ves_converter_activate() {
-    // Create database tables
-    VesConverter\Models\ConverterModel::create_tables();
+    // Create or update the database table
+    require_once plugin_dir_path(__FILE__) . 'includes/class-converter-model.php';
+    ConverterModel::create_table();
+    
+    // Add default options if they don't exist
+    if (!get_option('ves_converter_default_rate_type')) {
+        update_option('ves_converter_default_rate_type', 'bcv');
+    }
+}
+
+// Hook to WordPress deactivation
+register_deactivation_hook(__FILE__, 'ves_converter_deactivate');
+function ves_converter_deactivate() {
+    // We don't delete the table on deactivation to preserve data
+    // If you want to delete the table, uncomment the following lines:
+    /*
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'ves_converter_rates';
+    $wpdb->query("DROP TABLE IF EXISTS $table_name");
+    */
+}
+
+// Hook to WordPress uninstall
+register_uninstall_hook(__FILE__, 'ves_converter_uninstall');
+function ves_converter_uninstall() {
+    // Delete the table and all plugin data
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'ves_converter_rates';
+    $wpdb->query("DROP TABLE IF EXISTS $table_name");
+    
+    // Delete plugin options
+    delete_option('ves_converter_default_rate_type');
 }
 
 // Initialize the plugin
