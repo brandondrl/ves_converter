@@ -120,7 +120,7 @@
                         </div>
                         
                         <div class="mt-6">
-                            <button type="submit" name="submit" id="submit" class="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <button type="button" id="submit" class="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 <?php _e('Save Changes', 'ves-converter'); ?>
                                 <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2zm-1 14H8v-7h8v7zm-1-11H9a1 1 0 010-2h6a1 1 0 110 2z"></path>
@@ -190,12 +190,14 @@
                 <div class="p-6 flex-1">
                     <div class="flex items-center justify-between mb-4">
                         <p class="text-gray-600"><?php _e('Latest exchange rates from VES Change Getter:', 'ves-converter'); ?></p>
-                        <button type="button" id="update-rates" style="background-color: #f59e0b; color: white; padding: 8px 12px; border-radius: 6px; font-size: 14px; display: flex; align-items: center;">
-                            <?php _e('Update rate manually', 'ves-converter'); ?>
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                            </svg>
-                        </button>
+                        <div class="flex gap-2">
+                            <button type="button" id="update-rates" style="background-color: #f59e0b; color: white; padding: 8px 12px; border-radius: 6px; font-size: 14px; display: flex; align-items: center;">
+                                <?php _e('Update rate manually', 'ves-converter'); ?>
+                                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -353,6 +355,59 @@
 
 <script>
 jQuery(document).ready(function($) {
+    // Save changes button
+    $('#submit').on('click', function() {
+        var rateType = $('#default_rate_type').val();
+        var customRate = $('#custom_rate_value').val();
+        
+        if (rateType === 'custom' && (!customRate || isNaN(customRate) || parseFloat(customRate) <= 0)) {
+            Swal.fire({
+                icon: 'error',
+                title: '<?php _e('Error!', 'ves-converter'); ?>',
+                text: '<?php _e('Please enter a valid custom rate value.', 'ves-converter'); ?>'
+            });
+            return;
+        }
+        
+        $.ajax({
+            url: '<?php echo admin_url('admin-ajax.php'); ?>',
+            type: 'POST',
+            data: {
+                action: 'ves_converter_test_save',
+                nonce: '<?php echo wp_create_nonce('ves_converter_test_save'); ?>',
+                rate_type: rateType,
+                custom_rate: customRate
+            },
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '<?php _e('Success!', 'ves-converter'); ?>',
+                        text: '<?php _e('Changes saved successfully.', 'ves-converter'); ?>',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(function() {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '<?php _e('Error!', 'ves-converter'); ?>',
+                        text: response.data.message || '<?php _e('Failed to save changes.', 'ves-converter'); ?>'
+                    });
+                }
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: '<?php _e('Error!', 'ves-converter'); ?>',
+                    text: '<?php _e('Failed to save changes. Please try again.', 'ves-converter'); ?>'
+                });
+            }
+        });
+    });
+    
+    // Update rates button
     $('#update-rates').on('click', function() {
         var button = $(this);
         button.prop('disabled', true);

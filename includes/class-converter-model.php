@@ -1,11 +1,6 @@
 <?php
 
 class ConverterModel {
-    public static function get_table_name() {
-        global $wpdb;
-        return $wpdb->prefix . 'ves_converter_rates';
-    }
-    
     public static function create_table() {
         global $wpdb;
         $table_name = self::get_table_name();
@@ -31,14 +26,17 @@ class ConverterModel {
         // Get current rates or initialize empty array
         $current_rates = self::get_latest_rates();
         if (!$current_rates) {
-            $current_rates = array();
+            $current_rates = array(
+                'bcv' => array('value' => 0, 'catch_date' => ''),
+                'average' => array('value' => 0, 'catch_date' => ''),
+                'parallel' => array('value' => 0, 'catch_date' => '')
+            );
         }
         
         // Update the specific rate
         $current_rates[$type] = array(
             'value' => $value,
-            'user_id' => $user_id,
-            'updated_at' => current_time('mysql')
+            'catch_date' => current_time('mysql')
         );
         
         // Save the updated rates
@@ -49,6 +47,8 @@ class ConverterModel {
             ),
             array('%s')
         );
+        
+        return $wpdb->insert_id;
     }
     
     public static function get_latest_rates() {
@@ -70,26 +70,8 @@ class ConverterModel {
         global $wpdb;
         $table_name = self::get_table_name();
         
-        $results = $wpdb->get_results(
-            "SELECT * FROM $table_name ORDER BY created_at DESC"
+        return $wpdb->get_results(
+            "SELECT * FROM $table_name ORDER BY created_at DESC LIMIT 10"
         );
-        
-        $formatted_results = array();
-        foreach ($results as $row) {
-            $rates = json_decode($row->rates, true);
-            if ($rates) {
-                foreach ($rates as $type => $data) {
-                    $formatted_results[] = array(
-                        'id' => $row->id,
-                        'rate_type' => $type,
-                        'rate_value' => $data['value'],
-                        'user_id' => $data['user_id'],
-                        'date_created' => $row->created_at
-                    );
-                }
-            }
-        }
-        
-        return $formatted_results;
     }
 } 

@@ -30,38 +30,8 @@ register_activation_hook(__FILE__, 'ves_converter_activate');
  * Plugin activation
  */
 function ves_converter_activate() {
-    // Create or update the database table
-    require_once plugin_dir_path(__FILE__) . 'includes/class-converter-model.php';
-    ConverterModel::create_table();
-    
-    // Add default options if they don't exist
-    if (!get_option('ves_converter_default_rate_type')) {
-        update_option('ves_converter_default_rate_type', 'bcv');
-    }
-}
-
-// Hook to WordPress deactivation
-register_deactivation_hook(__FILE__, 'ves_converter_deactivate');
-function ves_converter_deactivate() {
-    // We don't delete the table on deactivation to preserve data
-    // If you want to delete the table, uncomment the following lines:
-    /*
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'ves_converter_rates';
-    $wpdb->query("DROP TABLE IF EXISTS $table_name");
-    */
-}
-
-// Hook to WordPress uninstall
-register_uninstall_hook(__FILE__, 'ves_converter_uninstall');
-function ves_converter_uninstall() {
-    // Delete the table and all plugin data
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'ves_converter_rates';
-    $wpdb->query("DROP TABLE IF EXISTS $table_name");
-    
-    // Delete plugin options
-    delete_option('ves_converter_default_rate_type');
+    // Create database tables
+    VesConverter\Models\ConverterModel::create_tables();
 }
 
 // Initialize the plugin
@@ -104,6 +74,113 @@ function ves_converter_update_rates_callback() {
         if (isset($rate_data['value'])) {
             ConverterModel::save_rate($user_id, $type, $rate_data['value']);
         }
+    }
+    
+    wp_send_json_success();
+}
+
+// Add AJAX handler for test save
+add_action('wp_ajax_ves_converter_test_save', 'ves_converter_test_save_callback');
+function ves_converter_test_save_callback() {
+    check_ajax_referer('ves_converter_test_save', 'nonce');
+    
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'ves-converter')));
+    }
+    
+    $rate_type = isset($_POST['rate_type']) ? sanitize_text_field($_POST['rate_type']) : '';
+    $custom_rate = isset($_POST['custom_rate']) ? floatval($_POST['custom_rate']) : 0;
+    
+    if (empty($rate_type)) {
+        wp_send_json_error(array('message' => __('Rate type is required.', 'ves-converter')));
+    }
+    
+    // Prepare rates data
+    $rates = array();
+    $current_time = current_time('mysql');
+    
+    if ($rate_type === 'custom') {
+        if ($custom_rate <= 0) {
+            wp_send_json_error(array('message' => __('Custom rate must be greater than 0.', 'ves-converter')));
+        }
+        $rates = array(
+            'bcv' => array(
+                'value' => 0,
+                'catch_date' => $current_time,
+                'selected' => false
+            ),
+            'parallel' => array(
+                'value' => 0,
+                'catch_date' => $current_time,
+                'selected' => false
+            ),
+            'average' => array(
+                'value' => 0,
+                'catch_date' => $current_time,
+                'selected' => false
+            ),
+            'custom' => array(
+                'value' => $custom_rate,
+                'catch_date' => $current_time,
+                'selected' => true
+            )
+        );
+    } else {
+        // Get current rates from API
+        $api_url = 'https://catalogo.grupoidsi.com/wp-json/ves-change-getter/v1/latest';
+        $response = wp_remote_get($api_url);
+        
+        if (is_wp_error($response)) {
+            wp_send_json_error(array('message' => $response->get_error_message()));
+        }
+        
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+        
+        if (!$data || !isset($data['success']) || !$data['success'] || !isset($data['data']['rates'])) {
+            wp_send_json_error(array('message' => __('Invalid response from API.', 'ves-converter')));
+        }
+        
+        $api_rates = $data['data']['rates'];
+        $rates = array(
+            'bcv' => array(
+                'value' => isset($api_rates['bcv']['value']) ? $api_rates['bcv']['value'] : 0,
+                'catch_date' => isset($api_rates['bcv']['catch_date']) ? $api_rates['bcv']['catch_date'] : $current_time,
+                'selected' => ($rate_type === 'bcv')
+            ),
+            'parallel' => array(
+                'value' => isset($api_rates['parallel']['value']) ? $api_rates['parallel']['value'] : 0,
+                'catch_date' => isset($api_rates['parallel']['catch_date']) ? $api_rates['parallel']['catch_date'] : $current_time,
+                'selected' => ($rate_type === 'parallel')
+            ),
+            'average' => array(
+                'value' => isset($api_rates['average']['value']) ? $api_rates['average']['value'] : 0,
+                'catch_date' => isset($api_rates['average']['catch_date']) ? $api_rates['average']['catch_date'] : $current_time,
+                'selected' => ($rate_type === 'average')
+            ),
+            'custom' => array(
+                'value' => 0,
+                'catch_date' => $current_time,
+                'selected' => false
+            )
+        );
+    }
+    
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'ves_converter_rates';
+    
+    $result = $wpdb->insert(
+        $table_name,
+        array(
+            'rates' => json_encode($rates),
+            'created_at' => $current_time,
+            'updated_at' => $current_time
+        ),
+        array('%s', '%s', '%s')
+    );
+    
+    if ($result === false) {
+        wp_send_json_error(array('message' => $wpdb->last_error));
     }
     
     wp_send_json_success();
