@@ -172,7 +172,62 @@
                 
                 <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 mt-auto">
                     <p class="text-sm text-gray-600">
-                        <?php _e('Currently using:', 'ves-converter'); ?> <span class="font-medium text-blue-700">BCV (Central Bank)</span>
+                        <?php 
+                        global $wpdb;
+                        $table_name = $wpdb->prefix . 'ves_converter_rates';
+                        $latest_rate = $wpdb->get_row("SELECT rates FROM $table_name ORDER BY created_at DESC LIMIT 1");
+                        
+                        if ($latest_rate && isset($latest_rate->rates)) {
+                            $rates_data = json_decode($latest_rate->rates, true);
+                            $selected_type = '';
+                            $selected_value = 0;
+                            $selected_date = '';
+                            
+                            foreach ($rates_data as $type => $data) {
+                                if (isset($data['selected']) && $data['selected']) {
+                                    $selected_type = $type;
+                                    $selected_value = $data['value'];
+                                    $selected_date = $data['catch_date'];
+                                    break;
+                                }
+                            }
+                            
+                            if (!empty($selected_type)) {
+                                $type_label = '';
+                                switch ($selected_type) {
+                                    case 'bcv':
+                                        $type_label = __('BCV (Central Bank)', 'ves-converter');
+                                        $color_class = 'text-blue-700';
+                                        break;
+                                    case 'average':
+                                        $type_label = __('Average Rate', 'ves-converter');
+                                        $color_class = 'text-green-700';
+                                        break;
+                                    case 'parallel':
+                                        $type_label = __('Parallel Market', 'ves-converter');
+                                        $color_class = 'text-purple-700';
+                                        break;
+                                    case 'custom':
+                                        $type_label = __('Custom Rate', 'ves-converter');
+                                        $color_class = 'text-amber-700';
+                                        break;
+                                }
+                                
+                                _e('Currently using:', 'ves-converter'); 
+                                echo ' <span class="font-medium ' . $color_class . '">' . $type_label . '</span>';
+                                echo ' <span class="mx-1">|</span> ';
+                                echo '<span class="font-medium">' . number_format($selected_value, 2) . ' Bs.</span>';
+                                echo ' <span class="mx-1">|</span> ';
+                                echo '<span class="text-gray-500">' . $selected_date . '</span>';
+                            } else {
+                                _e('Currently using:', 'ves-converter'); ?> <span class="font-medium text-blue-700"><?php _e('BCV (Central Bank)', 'ves-converter'); ?></span>
+                            <?php
+                            }
+                        } else {
+                            _e('Currently using:', 'ves-converter'); ?> <span class="font-medium text-blue-700"><?php _e('BCV (Central Bank)', 'ves-converter'); ?></span>
+                        <?php
+                        }
+                        ?>
                     </p>
                 </div>
             </div>
