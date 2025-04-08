@@ -42,3 +42,39 @@ function ves_converter_init() {
 
 // Hook to WordPress init
 add_action('plugins_loaded', 'ves_converter_init');
+
+// Add AJAX handler for updating rates
+add_action('wp_ajax_ves_converter_update_rates', 'ves_converter_update_rates_callback');
+function ves_converter_update_rates_callback() {
+    check_ajax_referer('ves_converter_update_rates', 'nonce');
+    
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'ves-converter')));
+    }
+    
+    $api_url = 'https://catalogo.grupoidsi.com/wp-json/ves-change-getter/v1/latest';
+    $response = wp_remote_get($api_url);
+    
+    if (is_wp_error($response)) {
+        wp_send_json_error(array('message' => $response->get_error_message()));
+    }
+    
+    $body = wp_remote_retrieve_body($response);
+    $data = json_decode($body, true);
+    
+    if (!$data || !isset($data['success']) || !$data['success'] || !isset($data['data']['rates'])) {
+        wp_send_json_error(array('message' => __('Invalid response from API.', 'ves-converter')));
+    }
+    
+    $rates = $data['data']['rates'];
+    $user_id = get_current_user_id();
+    
+    // Save each rate type
+    foreach ($rates as $type => $rate_data) {
+        if (isset($rate_data['value'])) {
+            ConverterModel::save_rate($user_id, $type, $rate_data['value']);
+        }
+    }
+    
+    wp_send_json_success();
+}

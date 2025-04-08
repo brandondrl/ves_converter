@@ -85,47 +85,57 @@
                     </h3>
                 </div>
                 <div class="p-6 flex-1">
-                    <p class="mb-4 text-gray-600"><?php _e('Latest exchange rates from VES Change Getter:', 'ves-converter'); ?></p>
+                    <div class="flex items-center justify-between mb-4">
+                        <p class="text-gray-600"><?php _e('Latest exchange rates from VES Change Getter:', 'ves-converter'); ?></p>
+                        <button type="button" id="update-rates" style="background-color: #f59e0b; color: white; padding: 8px 12px; border-radius: 6px; font-size: 14px; display: flex; align-items: center;">
+                            <?php _e('Update rate manually', 'ves-converter'); ?>
+                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                        </button>
+                    </div>
                     
                     <?php
                     // Get latest rates from VES Change Getter
-                    $api_url = rest_url('ves-change-getter/v1/latest');
+                    $api_url = 'https://catalogo.grupoidsi.com/wp-json/ves-change-getter/v1/latest';
                     $response = wp_remote_get($api_url);
                     $rates = [];
+                    $last_updated = __('Unknown', 'ves-converter');
                     
                     if (!is_wp_error($response)) {
                         $body = wp_remote_retrieve_body($response);
                         $data = json_decode($body, true);
                         
-                        if ($data && isset($data['rates'])) {
-                            $rates = $data['rates'];
+                        if ($data && isset($data['success']) && $data['success'] && isset($data['data']['rates'])) {
+                            $rates = $data['data']['rates'];
+                            $last_updated = date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($data['data']['update_date']));
                         }
                     }
-                    
-                    // Get last update time
-                    $last_updated = isset($data['timestamp']) ? date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $data['timestamp']) : __('Unknown', 'ves-converter');
                     ?>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
                             <h4 class="text-sm font-medium text-blue-800 mb-1"><?php _e('BCV Rate', 'ves-converter'); ?></h4>
                             <p class="text-2xl font-bold text-blue-700">
-                                <?php echo isset($rates['bcv']) ? number_format($rates['bcv'], 2) : 'N/A'; ?> <span class="text-sm font-normal">Bs.</span>
+                                <?php echo isset($rates['bcv']['value']) ? number_format($rates['bcv']['value'], 2) : 'N/A'; ?> <span class="text-sm font-normal">Bs.</span>
                             </p>
+                            <p class="text-xs text-blue-600 mt-1"><?php echo isset($rates['bcv']['catch_date']) ? $rates['bcv']['catch_date'] : ''; ?></p>
                         </div>
                         
                         <div class="bg-green-50 p-4 rounded-lg border border-green-100">
                             <h4 class="text-sm font-medium text-green-800 mb-1"><?php _e('Average Rate', 'ves-converter'); ?></h4>
                             <p class="text-2xl font-bold text-green-700">
-                                <?php echo isset($rates['average']) ? number_format($rates['average'], 2) : 'N/A'; ?> <span class="text-sm font-normal">Bs.</span>
+                                <?php echo isset($rates['average']['value']) ? number_format($rates['average']['value'], 2) : 'N/A'; ?> <span class="text-sm font-normal">Bs.</span>
                             </p>
+                            <p class="text-xs text-green-600 mt-1"><?php echo isset($rates['average']['catch_date']) ? $rates['average']['catch_date'] : ''; ?></p>
                         </div>
                         
                         <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
                             <h4 class="text-sm font-medium text-purple-800 mb-1"><?php _e('Parallel Rate', 'ves-converter'); ?></h4>
                             <p class="text-2xl font-bold text-purple-700">
-                                <?php echo isset($rates['parallel']) ? number_format($rates['parallel'], 2) : 'N/A'; ?> <span class="text-sm font-normal">Bs.</span>
+                                <?php echo isset($rates['parallel']['value']) ? number_format($rates['parallel']['value'], 2) : 'N/A'; ?> <span class="text-sm font-normal">Bs.</span>
                             </p>
+                            <p class="text-xs text-purple-600 mt-1"><?php echo isset($rates['parallel']['catch_date']) ? $rates['parallel']['catch_date'] : ''; ?></p>
                         </div>
                     </div>
                 </div>
@@ -218,4 +228,51 @@
             <p>VES Converter v1.0 | <?php _e('Developed with ❤️ by IDSI', 'ves-converter'); ?></p>
         </div>
     </div>
-</div> 
+</div>
+
+<script>
+jQuery(document).ready(function($) {
+    $('#update-rates').on('click', function() {
+        var button = $(this);
+        button.prop('disabled', true);
+        
+        $.ajax({
+            url: '<?php echo admin_url('admin-ajax.php'); ?>',
+            type: 'POST',
+            data: {
+                action: 'ves_converter_update_rates',
+                nonce: '<?php echo wp_create_nonce('ves_converter_update_rates'); ?>'
+            },
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '<?php _e('Success!', 'ves-converter'); ?>',
+                        text: '<?php _e('Rates have been updated successfully.', 'ves-converter'); ?>',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(function() {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '<?php _e('Error!', 'ves-converter'); ?>',
+                        text: response.data.message || '<?php _e('Failed to update rates.', 'ves-converter'); ?>'
+                    });
+                }
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: '<?php _e('Error!', 'ves-converter'); ?>',
+                    text: '<?php _e('Failed to update rates. Please try again.', 'ves-converter'); ?>'
+                });
+            },
+            complete: function() {
+                button.prop('disabled', false);
+            }
+        });
+    });
+});
+</script> 
