@@ -43,12 +43,11 @@
                         <?php _e('Set Your Rate Today', 'ves-converter'); ?>
                     </h3>
                 </div>
-                <div class="p-6 flex-1">
-                    <p class="mb-5 text-gray-600"><?php _e('Select which exchange rate you want to use across your site:', 'ves-converter'); ?></p>
+                <div class="p-6 flex-1 flex flex-col justify-center">
+                    <p class="mb-5 text-lg font-medium text-gray-700"><?php _e('Choose your daily exchange rate type', 'ves-converter'); ?></p>
                     <form method="post" action="">
                         <?php wp_nonce_field('ves_converter_settings', 'ves_converter_nonce'); ?>
                         <div class="mb-6">
-                            <label for="default_rate_type" class="block mb-2 font-medium text-gray-700"><?php _e('Default rate', 'ves-converter'); ?></label>
                             <select name="default_rate_type" id="default_rate_type" class="block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                                 <option value="bcv"><?php _e('BCV (Central Bank)', 'ves-converter'); ?></option>
                                 <option value="average"><?php _e('Average Rate', 'ves-converter'); ?></option>
