@@ -45,13 +45,59 @@
                 </div>
                 <div class="p-6 flex-1 flex flex-col justify-center">
                     <p class="mb-5 text-lg font-medium text-gray-700"><?php _e('Choose your daily exchange rate type', 'ves-converter'); ?></p>
+                    
+                    <?php
+                    // Get latest rates from VES Change Getter
+                    $api_url = 'https://catalogo.grupoidsi.com/wp-json/ves-change-getter/v1/latest';
+                    $response = wp_remote_get($api_url);
+                    $rates = [];
+                    $last_updated = __('Unknown', 'ves-converter');
+                    
+                    if (!is_wp_error($response)) {
+                        $body = wp_remote_retrieve_body($response);
+                        $data = json_decode($body, true);
+                                                
+                        if ($data && isset($data['success']) && $data['success'] && isset($data['data']['rates'])) {
+                            $rates = $data['data']['rates'];
+                            $last_updated = date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($data['data']['update_date']));
+                        }
+                    }
+                    ?>
+                    
                     <form method="post" action="">
                         <?php wp_nonce_field('ves_converter_settings', 'ves_converter_nonce'); ?>
                         <div class="mb-6">
                             <select name="default_rate_type" id="default_rate_type" class="block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                <option value="bcv"><?php _e('BCV (Central Bank)', 'ves-converter'); ?></option>
-                                <option value="average"><?php _e('Average Rate', 'ves-converter'); ?></option>
-                                <option value="parallel"><?php _e('Parallel Market', 'ves-converter'); ?></option>
+                                <option value="bcv">
+                                    <?php 
+                                    _e('BCV (Central Bank)', 'ves-converter');
+                                    if (!empty($rates) && isset($rates['bcv']) && isset($rates['bcv']['value'])) {
+                                        echo ' (' . number_format($rates['bcv']['value'], 2) . ' Bs.)';
+                                    } else {
+                                        echo ' (No data)';
+                                    }
+                                    ?>
+                                </option>
+                                <option value="average">
+                                    <?php 
+                                    _e('Average Rate', 'ves-converter');
+                                    if (!empty($rates) && isset($rates['average']) && isset($rates['average']['value'])) {
+                                        echo ' (' . number_format($rates['average']['value'], 2) . ' Bs.)';
+                                    } else {
+                                        echo ' (No data)';
+                                    }
+                                    ?>
+                                </option>
+                                <option value="parallel">
+                                    <?php 
+                                    _e('Parallel Market', 'ves-converter');
+                                    if (!empty($rates) && isset($rates['parallel']) && isset($rates['parallel']['value'])) {
+                                        echo ' (' . number_format($rates['parallel']['value'], 2) . ' Bs.)';
+                                    } else {
+                                        echo ' (No data)';
+                                    }
+                                    ?>
+                                </option>
                             </select>
                             <p class="mt-2 text-sm text-gray-500"><?php _e('This will be applied to all conversions on your website', 'ves-converter'); ?></p>
                         </div>
@@ -95,47 +141,65 @@
                         </button>
                     </div>
                     
-                    <?php
-                    // Get latest rates from VES Change Getter
-                    $api_url = 'https://catalogo.grupoidsi.com/wp-json/ves-change-getter/v1/latest';
-                    $response = wp_remote_get($api_url);
-                    $rates = [];
-                    $last_updated = __('Unknown', 'ves-converter');
-                    
-                    if (!is_wp_error($response)) {
-                        $body = wp_remote_retrieve_body($response);
-                        $data = json_decode($body, true);
-                        
-                        if ($data && isset($data['success']) && $data['success'] && isset($data['data']['rates'])) {
-                            $rates = $data['data']['rates'];
-                            $last_updated = date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($data['data']['update_date']));
-                        }
-                    }
-                    ?>
-                    
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
                             <h4 class="text-sm font-medium text-blue-800 mb-1"><?php _e('BCV Rate', 'ves-converter'); ?></h4>
                             <p class="text-2xl font-bold text-blue-700">
-                                <?php echo isset($rates['bcv']['value']) ? number_format($rates['bcv']['value'], 2) : 'N/A'; ?> <span class="text-sm font-normal">Bs.</span>
+                                <?php 
+                                if (!empty($rates) && isset($rates['bcv']) && isset($rates['bcv']['value'])) {
+                                    echo number_format($rates['bcv']['value'], 2);
+                                } else {
+                                    echo 'N/A';
+                                }
+                                ?> <span class="text-sm font-normal">Bs.</span>
                             </p>
-                            <p class="text-xs text-blue-600 mt-1"><?php echo isset($rates['bcv']['catch_date']) ? $rates['bcv']['catch_date'] : ''; ?></p>
+                            <p class="text-xs text-blue-600 mt-1">
+                                <?php 
+                                if (!empty($rates) && isset($rates['bcv']) && isset($rates['bcv']['catch_date'])) {
+                                    echo esc_html($rates['bcv']['catch_date']); 
+                                }
+                                ?>
+                            </p>
                         </div>
                         
                         <div class="bg-green-50 p-4 rounded-lg border border-green-100">
                             <h4 class="text-sm font-medium text-green-800 mb-1"><?php _e('Average Rate', 'ves-converter'); ?></h4>
                             <p class="text-2xl font-bold text-green-700">
-                                <?php echo isset($rates['average']['value']) ? number_format($rates['average']['value'], 2) : 'N/A'; ?> <span class="text-sm font-normal">Bs.</span>
+                                <?php 
+                                if (!empty($rates) && isset($rates['average']) && isset($rates['average']['value'])) {
+                                    echo number_format($rates['average']['value'], 2);
+                                } else {
+                                    echo 'N/A';
+                                }
+                                ?> <span class="text-sm font-normal">Bs.</span>
                             </p>
-                            <p class="text-xs text-green-600 mt-1"><?php echo isset($rates['average']['catch_date']) ? $rates['average']['catch_date'] : ''; ?></p>
+                            <p class="text-xs text-green-600 mt-1">
+                                <?php 
+                                if (!empty($rates) && isset($rates['average']) && isset($rates['average']['catch_date'])) {
+                                    echo esc_html($rates['average']['catch_date']); 
+                                }
+                                ?>
+                            </p>
                         </div>
                         
                         <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
                             <h4 class="text-sm font-medium text-purple-800 mb-1"><?php _e('Parallel Rate', 'ves-converter'); ?></h4>
                             <p class="text-2xl font-bold text-purple-700">
-                                <?php echo isset($rates['parallel']['value']) ? number_format($rates['parallel']['value'], 2) : 'N/A'; ?> <span class="text-sm font-normal">Bs.</span>
+                                <?php 
+                                if (!empty($rates) && isset($rates['parallel']) && isset($rates['parallel']['value'])) {
+                                    echo number_format($rates['parallel']['value'], 2);
+                                } else {
+                                    echo 'N/A';
+                                }
+                                ?> <span class="text-sm font-normal">Bs.</span>
                             </p>
-                            <p class="text-xs text-purple-600 mt-1"><?php echo isset($rates['parallel']['catch_date']) ? $rates['parallel']['catch_date'] : ''; ?></p>
+                            <p class="text-xs text-purple-600 mt-1">
+                                <?php 
+                                if (!empty($rates) && isset($rates['parallel']) && isset($rates['parallel']['catch_date'])) {
+                                    echo esc_html($rates['parallel']['catch_date']); 
+                                }
+                                ?>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -143,7 +207,7 @@
                 <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 mt-auto">
                     <p class="text-sm text-gray-600 flex items-center">
                         <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-4h.01M9 16h.01"></path>
                         </svg>
                         <?php _e('Last updated:', 'ves-converter'); ?> <span class="font-medium text-green-700 ml-1"><?php echo $last_updated; ?></span>
                     </p>
