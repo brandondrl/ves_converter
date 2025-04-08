@@ -95,75 +95,50 @@ function ves_converter_test_save_callback() {
         wp_send_json_error(array('message' => __('Rate type is required.', 'ves-converter')));
     }
     
-    // Prepare rates data
-    $rates = array();
+    // Get current rates from API
+    $api_url = 'https://catalogo.grupoidsi.com/wp-json/ves-change-getter/v1/latest';
+    $response = wp_remote_get($api_url);
+    
+    if (is_wp_error($response)) {
+        wp_send_json_error(array('message' => $response->get_error_message()));
+    }
+    
+    $body = wp_remote_retrieve_body($response);
+    $data = json_decode($body, true);
+    
+    if (!$data || !isset($data['success']) || !$data['success'] || !isset($data['data']['rates'])) {
+        wp_send_json_error(array('message' => __('Invalid response from API.', 'ves-converter')));
+    }
+    
+    $api_rates = $data['data']['rates'];
     $current_time = current_time('mysql');
     
-    if ($rate_type === 'custom') {
-        if ($custom_rate <= 0) {
-            wp_send_json_error(array('message' => __('Custom rate must be greater than 0.', 'ves-converter')));
-        }
-        $rates = array(
-            'bcv' => array(
-                'value' => 0,
-                'catch_date' => $current_time,
-                'selected' => false
-            ),
-            'parallel' => array(
-                'value' => 0,
-                'catch_date' => $current_time,
-                'selected' => false
-            ),
-            'average' => array(
-                'value' => 0,
-                'catch_date' => $current_time,
-                'selected' => false
-            ),
-            'custom' => array(
-                'value' => $custom_rate,
-                'catch_date' => $current_time,
-                'selected' => true
-            )
-        );
-    } else {
-        // Get current rates from API
-        $api_url = 'https://catalogo.grupoidsi.com/wp-json/ves-change-getter/v1/latest';
-        $response = wp_remote_get($api_url);
-        
-        if (is_wp_error($response)) {
-            wp_send_json_error(array('message' => $response->get_error_message()));
-        }
-        
-        $body = wp_remote_retrieve_body($response);
-        $data = json_decode($body, true);
-        
-        if (!$data || !isset($data['success']) || !$data['success'] || !isset($data['data']['rates'])) {
-            wp_send_json_error(array('message' => __('Invalid response from API.', 'ves-converter')));
-        }
-        
-        $api_rates = $data['data']['rates'];
-        $rates = array(
-            'bcv' => array(
-                'value' => isset($api_rates['bcv']['value']) ? $api_rates['bcv']['value'] : 0,
-                'catch_date' => isset($api_rates['bcv']['catch_date']) ? $api_rates['bcv']['catch_date'] : $current_time,
-                'selected' => ($rate_type === 'bcv')
-            ),
-            'parallel' => array(
-                'value' => isset($api_rates['parallel']['value']) ? $api_rates['parallel']['value'] : 0,
-                'catch_date' => isset($api_rates['parallel']['catch_date']) ? $api_rates['parallel']['catch_date'] : $current_time,
-                'selected' => ($rate_type === 'parallel')
-            ),
-            'average' => array(
-                'value' => isset($api_rates['average']['value']) ? $api_rates['average']['value'] : 0,
-                'catch_date' => isset($api_rates['average']['catch_date']) ? $api_rates['average']['catch_date'] : $current_time,
-                'selected' => ($rate_type === 'average')
-            ),
-            'custom' => array(
-                'value' => 0,
-                'catch_date' => $current_time,
-                'selected' => false
-            )
-        );
+    // Prepare rates data
+    $rates = array(
+        'bcv' => array(
+            'value' => isset($api_rates['bcv']['value']) ? $api_rates['bcv']['value'] : 0,
+            'catch_date' => isset($api_rates['bcv']['catch_date']) ? $api_rates['bcv']['catch_date'] : $current_time,
+            'selected' => ($rate_type === 'bcv')
+        ),
+        'parallel' => array(
+            'value' => isset($api_rates['parallel']['value']) ? $api_rates['parallel']['value'] : 0,
+            'catch_date' => isset($api_rates['parallel']['catch_date']) ? $api_rates['parallel']['catch_date'] : $current_time,
+            'selected' => ($rate_type === 'parallel')
+        ),
+        'average' => array(
+            'value' => isset($api_rates['average']['value']) ? $api_rates['average']['value'] : 0,
+            'catch_date' => isset($api_rates['average']['catch_date']) ? $api_rates['average']['catch_date'] : $current_time,
+            'selected' => ($rate_type === 'average')
+        ),
+        'custom' => array(
+            'value' => ($rate_type === 'custom') ? $custom_rate : 0,
+            'catch_date' => date('Y-m-d h:i:s A', strtotime('-4 hours', strtotime(gmdate('Y-m-d H:i:s')))),
+            'selected' => ($rate_type === 'custom')
+        )
+    );
+    
+    if ($rate_type === 'custom' && $custom_rate <= 0) {
+        wp_send_json_error(array('message' => __('Custom rate must be greater than 0.', 'ves-converter')));
     }
     
     global $wpdb;
