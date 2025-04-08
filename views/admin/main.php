@@ -98,7 +98,24 @@
                                     }
                                     ?>
                                 </option>
+                                <option value="custom"><?php _e('Custom Rate', 'ves-converter'); ?></option>
                             </select>
+                            
+                            <div id="custom-rate-field" class="mt-4 hidden">
+                                <label for="custom_rate_value" class="block text-sm font-medium text-gray-700 mb-1"><?php _e('Custom Rate Value', 'ves-converter'); ?></label>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" 
+                                           name="custom_rate_value" 
+                                           id="custom_rate_value" 
+                                           step="0.01" 
+                                           min="0" 
+                                           class="block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                           placeholder="<?php _e('Enter custom rate value', 'ves-converter'); ?>">
+                                    <span class="text-gray-500 whitespace-nowrap ml-2">Bs.</span>
+                                </div>
+                                <p class="mt-1 text-sm text-gray-500"><?php _e('Enter a custom exchange rate value with up to 2 decimal places', 'ves-converter'); ?></p>
+                            </div>
+                            
                             <p class="mt-2 text-sm text-gray-500"><?php _e('This will be applied to all conversions on your website', 'ves-converter'); ?></p>
                         </div>
                         
@@ -111,6 +128,46 @@
                             </button>
                         </div>
                     </form>
+                    
+                    <script>
+                    jQuery(document).ready(function($) {
+                        // Show/hide custom rate field based on select value
+                        $('#default_rate_type').on('change', function() {
+                            if ($(this).val() === 'custom') {
+                                $('#custom-rate-field').removeClass('hidden');
+                            } else {
+                                $('#custom-rate-field').addClass('hidden');
+                            }
+                        });
+                        
+                        // Validate custom rate input
+                        $('#custom_rate_value').on('input', function() {
+                            var value = $(this).val();
+                            if (value) {
+                                // Ensure only 2 decimal places
+                                var parts = value.split('.');
+                                if (parts.length > 1 && parts[1].length > 2) {
+                                    $(this).val(parseFloat(value).toFixed(2));
+                                }
+                            }
+                        });
+                        
+                        // Form submission validation
+                        $('form').on('submit', function(e) {
+                            if ($('#default_rate_type').val() === 'custom') {
+                                var customValue = $('#custom_rate_value').val();
+                                if (!customValue || isNaN(customValue) || parseFloat(customValue) <= 0) {
+                                    e.preventDefault();
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: '<?php _e('Error!', 'ves-converter'); ?>',
+                                        text: '<?php _e('Please enter a valid custom rate value.', 'ves-converter'); ?>'
+                                    });
+                                }
+                            }
+                        });
+                    });
+                    </script>
                 </div>
                 
                 <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 mt-auto">
