@@ -34,7 +34,7 @@
         
         <div class="flex justify-between gap-4">
             <!-- Configuration -->
-            <div class="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden flex-1">
+            <div class="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden flex-1 flex flex-col">
                 <div class="bg-blue-50 p-4 border-b border-blue-100">
                     <h3 class="text-lg font-medium text-blue-700 flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -43,7 +43,7 @@
                         <?php _e('Set Your Rate Today', 'ves-converter'); ?>
                     </h3>
                 </div>
-                <div class="p-6">
+                <div class="p-6 flex-1">
                     <p class="mb-5 text-gray-600"><?php _e('Select which exchange rate you want to use across your site:', 'ves-converter'); ?></p>
                     <form method="post" action="">
                         <?php wp_nonce_field('ves_converter_settings', 'ves_converter_nonce'); ?>
@@ -67,10 +67,16 @@
                         </div>
                     </form>
                 </div>
+                
+                <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 mt-auto">
+                    <p class="text-sm text-gray-600">
+                        <?php _e('Currently using:', 'ves-converter'); ?> <span class="font-medium text-blue-700">BCV (Central Bank)</span>
+                    </p>
+                </div>
             </div>
             
             <!-- Rates Information -->
-            <div class="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden flex-1">
+            <div class="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden flex-1 flex flex-col">
                 <div class="bg-green-50 p-4 border-b border-green-100">
                     <h3 class="text-lg font-medium text-green-700 flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -79,7 +85,7 @@
                         <?php _e('Current Exchange Rates', 'ves-converter'); ?>
                     </h3>
                 </div>
-                <div class="p-6">
+                <div class="p-6 flex-1">
                     <p class="mb-4 text-gray-600"><?php _e('Latest exchange rates from VES Change Getter:', 'ves-converter'); ?></p>
                     
                     <?php
@@ -101,7 +107,7 @@
                     $last_updated = isset($data['timestamp']) ? date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $data['timestamp']) : __('Unknown', 'ves-converter');
                     ?>
                     
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
                             <h4 class="text-sm font-medium text-blue-800 mb-1"><?php _e('BCV Rate', 'ves-converter'); ?></h4>
                             <p class="text-2xl font-bold text-blue-700">
@@ -123,13 +129,15 @@
                             </p>
                         </div>
                     </div>
-                    
-                    <div class="text-xs text-gray-500 flex items-center">
+                </div>
+                
+                <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 mt-auto">
+                    <p class="text-sm text-gray-600 flex items-center">
                         <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <?php _e('Last updated:', 'ves-converter'); ?> <?php echo $last_updated; ?>
-                    </div>
+                        <?php _e('Last updated:', 'ves-converter'); ?> <span class="font-medium text-green-700 ml-1"><?php echo $last_updated; ?></span>
+                    </p>
                 </div>
             </div>
         </div>
