@@ -102,7 +102,7 @@ use VesConverter\Models\ConverterModel;
                                     ?>
                                 </option>
                                 <option value="custom"><?php _e('Custom Rate', 'ves-converter'); ?></option>
-                            </select>
+                                    </select>
                             
                             <div id="custom-rate-field" class="mt-4 hidden">
                                 <label for="custom_rate_value" class="block text-sm font-medium text-gray-700 mb-1"><?php _e('Custom Rate Value', 'ves-converter'); ?></label>
@@ -343,17 +343,45 @@ use VesConverter\Models\ConverterModel;
                 <p class="mb-4 text-gray-600"><?php _e('Previous exchange rates saved by users:', 'ves-converter'); ?></p>
                 
                 <?php if (!empty($rate_history)) : ?>
-                <div class="overflow-x-auto border border-gray-200 rounded-lg">
-                    <table class="w-full">
+                <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm mx-auto max-w-4xl">
+                    <table class="w-full divide-y divide-gray-200">
                         <thead>
-                            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider">
-                                <th class="p-3 text-left border-b"><?php _e('Rate Type', 'ves-converter'); ?></th>
-                                <th class="p-3 text-left border-b"><?php _e('Rate Value', 'ves-converter'); ?></th>
-                                <th class="p-3 text-left border-b"><?php _e('Date', 'ves-converter'); ?></th>
-                                <th class="p-3 text-left border-b"><?php _e('Time (GMT-4)', 'ves-converter'); ?></th>
+                            <tr class="bg-gray-100">
+                                <th class="group px-4 py-3 text-left">
+                                    <div class="flex items-center space-x-1 text-xs font-medium text-gray-600 uppercase tracking-wider">
+                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                        <span><?php _e('Rate Type', 'ves-converter'); ?></span>
+                                    </div>
+                                </th>
+                                <th class="group px-4 py-3 text-left">
+                                    <div class="flex items-center space-x-1 text-xs font-medium text-gray-600 uppercase tracking-wider">
+                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span><?php _e('Rate Value', 'ves-converter'); ?></span>
+                                    </div>
+                                </th>
+                                <th class="group px-4 py-3 text-left">
+                                    <div class="flex items-center space-x-1 text-xs font-medium text-gray-600 uppercase tracking-wider">
+                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <span><?php _e('Date', 'ves-converter'); ?></span>
+                                    </div>
+                                </th>
+                                <th class="group px-4 py-3 text-left">
+                                    <div class="flex items-center space-x-1 text-xs font-medium text-gray-600 uppercase tracking-wider">
+                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span><?php _e('Time (GMT-4)', 'ves-converter'); ?></span>
+                                    </div>
+                                </th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200">
+                        <tbody class="bg-white divide-y divide-gray-200">
                             <?php foreach ($rate_history as $index => $record) : 
                                 $rates_data = json_decode($record['rates'], true);
                                 
@@ -385,32 +413,58 @@ use VesConverter\Models\ConverterModel;
                                 $gmt4_timestamp = strtotime('-4 hours', $created_timestamp);
                                 $date_formatted = date('Y-m-d', $gmt4_timestamp);
                                 $time_formatted = date('h:i:s A', $gmt4_timestamp);
+                                
+                                // Configurar color y etiqueta según el tipo
+                                $badge_color = '';
+                                $type_label = ucfirst($selected_type);
+                                
+                                switch ($selected_type) {
+                                    case 'bcv':
+                                        $badge_color = 'bg-blue-500 text-white border border-blue-600';
+                                        $type_label = 'BCV';
+                                        $hover_color = 'hover:bg-blue-50';
+                                        break;
+                                    case 'average':
+                                        $badge_color = 'bg-green-100 text-green-800 border border-green-200';
+                                        $type_label = 'Average';
+                                        $hover_color = 'hover:bg-green-50';
+                                        break;
+                                    case 'parallel':
+                                        $badge_color = 'bg-red-100 text-red-800 border border-red-200';
+                                        $type_label = 'Parallel';
+                                        $hover_color = 'hover:bg-red-50';
+                                        break;
+                                    case 'custom':
+                                        $badge_color = 'bg-gray-100 text-gray-800 border border-gray-200';
+                                        $type_label = 'Custom';
+                                        $hover_color = 'hover:bg-gray-50';
+                                        break;
+                                    default:
+                                        $badge_color = 'bg-gray-100 text-gray-800 border border-gray-200';
+                                        $hover_color = 'hover:bg-gray-50';
+                                        break;
+                                }
+                                
+                                // Alternar colores de fila
+                                $row_class = ($index % 2 === 0) ? 'bg-white' : 'bg-gray-50';
                             ?>
-                            <tr class="hover:bg-gray-50">
-                                <td class="p-3 text-sm font-medium">
-                                    <?php 
-                                    $type = esc_html(ucfirst($selected_type));
-                                    $color_class = '';
-                                    if ($selected_type == 'bcv') {
-                                        $color_class = 'text-blue-600';
-                                    } elseif ($selected_type == 'average') {
-                                        $color_class = 'text-green-600';
-                                    } elseif ($selected_type == 'parallel') {
-                                        $color_class = 'text-purple-600';
-                                    } elseif ($selected_type == 'custom') {
-                                        $color_class = 'text-amber-600';
-                                    }
-                                    echo '<span class="' . $color_class . '">' . $type . '</span>';
-                                    ?>
+                            <tr class="<?php echo $row_class . ' ' . $hover_color; ?> transition-colors duration-150">
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium <?php echo $badge_color; ?>">
+                                        <?php echo esc_html($type_label); ?>
+                                    </span>
                                 </td>
-                                <td class="p-3 text-sm font-medium">
-                                    <?php echo esc_html(number_format($selected_value, 2)) . ' Bs.'; ?>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <div class="text-sm font-semibold">
+                                        <?php echo esc_html(number_format($selected_value, 2)); ?>
+                                        <span class="text-xs font-normal text-gray-500">Bs.</span>
+                                    </div>
                                 </td>
-                                <td class="p-3 text-sm text-gray-500">
-                                    <?php echo esc_html($date_formatted); ?>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <div class="text-sm text-gray-700"><?php echo esc_html($date_formatted); ?></div>
                                 </td>
-                                <td class="p-3 text-sm text-gray-500">
-                                    <?php echo esc_html($time_formatted); ?>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <div class="text-sm text-gray-700"><?php echo esc_html($time_formatted); ?></div>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -436,7 +490,7 @@ use VesConverter\Models\ConverterModel;
             <p>VES Converter v1.0 | <?php _e('Developed with ❤️ by IDSI', 'ves-converter'); ?></p>
         </div>
     </div>
-</div>
+</div> 
 
 <script>
 jQuery(document).ready(function($) {
