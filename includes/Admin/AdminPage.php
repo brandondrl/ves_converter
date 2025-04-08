@@ -38,7 +38,7 @@ class AdminPage {
      */
     public function display_admin_page() {
         // Get saved rate history
-        $rate_history = ConverterModel::get_all_rates(20);
+        $rate_history = ConverterModel::get_all_rates();
         
         // Include admin view
         include VES_CONVERTER_PLUGIN_DIR . 'views/admin/main.php';

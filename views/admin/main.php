@@ -347,40 +347,70 @@ use VesConverter\Models\ConverterModel;
                     <table class="w-full">
                         <thead>
                             <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider">
-                                <th class="p-3 text-left border-b"><?php _e('User', 'ves-converter'); ?></th>
                                 <th class="p-3 text-left border-b"><?php _e('Rate Type', 'ves-converter'); ?></th>
                                 <th class="p-3 text-left border-b"><?php _e('Rate Value', 'ves-converter'); ?></th>
                                 <th class="p-3 text-left border-b"><?php _e('Date', 'ves-converter'); ?></th>
+                                <th class="p-3 text-left border-b"><?php _e('Time (GMT-4)', 'ves-converter'); ?></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            <?php foreach ($rate_history as $index => $record) : ?>
+                            <?php foreach ($rate_history as $index => $record) : 
+                                $rates_data = json_decode($record['rates'], true);
+                                
+                                // Encontrar la tasa seleccionada
+                                $selected_type = '';
+                                $selected_value = 0;
+                                $selected_date = '';
+                                
+                                foreach ($rates_data as $type => $data) {
+                                    if (isset($data['selected']) && $data['selected']) {
+                                        $selected_type = $type;
+                                        $selected_value = $data['value'];
+                                        $selected_date = $data['catch_date'];
+                                        break;
+                                    }
+                                }
+                                
+                                // Si no hay tasa seleccionada, mostrar la primera
+                                if (empty($selected_type) && !empty($rates_data)) {
+                                    $first_type = array_key_first($rates_data);
+                                    $selected_type = $first_type;
+                                    $selected_value = $rates_data[$first_type]['value'];
+                                    $selected_date = $rates_data[$first_type]['catch_date'];
+                                }
+                                
+                                // Formatear fecha y hora del created_at
+                                $created_timestamp = strtotime($record['created_at']);
+                                // Ajustar a GMT-4
+                                $gmt4_timestamp = strtotime('-4 hours', $created_timestamp);
+                                $date_formatted = date('Y-m-d', $gmt4_timestamp);
+                                $time_formatted = date('h:i:s A', $gmt4_timestamp);
+                            ?>
                             <tr class="hover:bg-gray-50">
-                                <td class="p-3 text-sm">
-                                    <?php 
-                                    $user_info = get_userdata($record['user_id']);
-                                    echo $user_info ? esc_html($user_info->user_login) : 'User ' . esc_html($record['user_id']); 
-                                    ?>
-                                </td>
                                 <td class="p-3 text-sm font-medium">
                                     <?php 
-                                    $type = esc_html(ucfirst($record['rate_type']));
+                                    $type = esc_html(ucfirst($selected_type));
                                     $color_class = '';
-                                    if ($record['rate_type'] == 'bcv') {
+                                    if ($selected_type == 'bcv') {
                                         $color_class = 'text-blue-600';
-                                    } elseif ($record['rate_type'] == 'average') {
+                                    } elseif ($selected_type == 'average') {
                                         $color_class = 'text-green-600';
-                                    } elseif ($record['rate_type'] == 'parallel') {
+                                    } elseif ($selected_type == 'parallel') {
                                         $color_class = 'text-purple-600';
+                                    } elseif ($selected_type == 'custom') {
+                                        $color_class = 'text-amber-600';
                                     }
                                     echo '<span class="' . $color_class . '">' . $type . '</span>';
                                     ?>
                                 </td>
                                 <td class="p-3 text-sm font-medium">
-                                    <?php echo esc_html(number_format($record['rate_value'], 2)) . ' Bs.'; ?>
+                                    <?php echo esc_html(number_format($selected_value, 2)) . ' Bs.'; ?>
                                 </td>
                                 <td class="p-3 text-sm text-gray-500">
-                                    <?php echo esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($record['date_created']))); ?>
+                                    <?php echo esc_html($date_formatted); ?>
+                                </td>
+                                <td class="p-3 text-sm text-gray-500">
+                                    <?php echo esc_html($time_formatted); ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>

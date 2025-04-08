@@ -19,6 +19,10 @@ class ConverterModel {
         global $wpdb;
         $this->table_name = $wpdb->prefix . 'ves_converter';
     }
+    public static function get_table_name() {
+        global $wpdb;
+        return $wpdb->prefix . 'ves_converter_rates';
+    }
 
     /**
      * Create plugin tables
@@ -114,17 +118,13 @@ class ConverterModel {
      * @param int $limit Maximum number of records to return
      * @return array Array of rate records
      */
-    public static function get_all_rates($limit = 50) {
+
+    public static function get_all_rates() {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'ves_converter';
+        $table_name = self::get_table_name();
         
-        $query = $wpdb->prepare(
-            "SELECT * FROM {$table_name} 
-            ORDER BY date_created DESC 
-            LIMIT %d",
-            $limit
+        return $wpdb->get_results(
+            "SELECT * FROM $table_name ORDER BY created_at DESC LIMIT 10", ARRAY_A
         );
-        
-        return $wpdb->get_results($query, ARRAY_A);
     }
 } 
