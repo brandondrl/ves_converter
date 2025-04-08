@@ -1,3 +1,6 @@
+<?php
+use VesConverter\Models\ConverterModel;
+?>
 <div class="wrap bg-gray-50 p-6">
     <div class="max-w-6xl mx-auto">
         <div class="flex items-center justify-between mb-4">
@@ -173,17 +176,14 @@
                 <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 mt-auto">
                     <p class="text-sm text-gray-600">
                         <?php 
-                        global $wpdb;
-                        $table_name = $wpdb->prefix . 'ves_converter_rates';
-                        $latest_rate = $wpdb->get_row("SELECT rates FROM $table_name ORDER BY created_at DESC LIMIT 1");
+                        // Usar el modelo para obtener la tasa actual
+                        $current_rates = ConverterModel::get_latest_rates();
+                        $selected_type = '';
+                        $selected_value = 0;
+                        $selected_date = '';
                         
-                        if ($latest_rate && isset($latest_rate->rates)) {
-                            $rates_data = json_decode($latest_rate->rates, true);
-                            $selected_type = '';
-                            $selected_value = 0;
-                            $selected_date = '';
-                            
-                            foreach ($rates_data as $type => $data) {
+                        if ($current_rates) {
+                            foreach ($current_rates as $type => $data) {
                                 if (isset($data['selected']) && $data['selected']) {
                                     $selected_type = $type;
                                     $selected_value = $data['value'];

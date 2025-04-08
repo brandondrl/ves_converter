@@ -84,6 +84,30 @@ class ConverterModel {
         return $wpdb->get_results($query);
     }
 
+
+
+    /**
+     * Get latest rate saved in the database
+     * 
+     * @param int $limit Maximum number of records to return
+     * @return array Array of rate records
+     */
+    public static function get_latest_rates() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'ves_converter_rates';
+     
+        $result = $wpdb->get_row(
+            "SELECT rates FROM $table_name ORDER BY created_at DESC LIMIT 1"
+        );
+        
+        if ($result && isset($result->rates)) {
+            return json_decode($result->rates, true);
+        }
+        
+        return null;
+    }
+
+
     /**
      * Get all rates saved in the database
      * 
