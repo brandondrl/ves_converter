@@ -27,20 +27,21 @@ class ConverterModel {
     /**
      * Create plugin tables
      */
-    public static function create_tables() {
+
+    public static function create_table() {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'ves_converter';
+        $table_name = self::get_table_name();
+        
         $charset_collate = $wpdb->get_charset_collate();
-
-        $sql = "CREATE TABLE $table_name (
+        
+        $sql = "CREATE TABLE IF NOT EXISTS $table_name (
             id bigint(20) NOT NULL AUTO_INCREMENT,
-            user_id bigint(20) NOT NULL,
-            rate_type varchar(50) NOT NULL,
-            rate_value decimal(20,10) NOT NULL,
-            date_created datetime NOT NULL,
-            PRIMARY KEY (id)
+            rates longtext NOT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id)
         ) $charset_collate;";
-
+        
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
     }

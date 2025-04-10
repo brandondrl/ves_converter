@@ -31,7 +31,7 @@ register_activation_hook(__FILE__, 'ves_converter_activate');
  */
 function ves_converter_activate() {
     // Create database tables
-    VesConverter\Models\ConverterModel::create_tables();
+    VesConverter\Models\ConverterModel::create_table();
 }
 
 // Initialize the plugin
@@ -82,6 +82,7 @@ function ves_converter_update_rates_callback() {
 // Add AJAX handler for test save
 add_action('wp_ajax_ves_converter_test_save', 'ves_converter_test_save_callback');
 function ves_converter_test_save_callback() {
+    // Verificar el nonce para seguridad
     check_ajax_referer('ves_converter_test_save', 'nonce');
     
     if (!current_user_can('manage_options')) {
@@ -100,7 +101,7 @@ function ves_converter_test_save_callback() {
     $response = wp_remote_get($api_url);
     
     if (is_wp_error($response)) {
-        wp_send_json_error(array('message' => $response->get_error_message()));
+        wp_send_json_error(array('message' => __('Failed to connect to rates API. Please try again later.', 'ves-converter')));
     }
     
     $body = wp_remote_retrieve_body($response);
@@ -141,9 +142,35 @@ function ves_converter_test_save_callback() {
         wp_send_json_error(array('message' => __('Custom rate must be greater than 0.', 'ves-converter')));
     }
     
+    // Verificar si la tabla existe, y crearla si no
     global $wpdb;
     $table_name = $wpdb->prefix . 'ves_converter_rates';
     
+    // Verificar si la tabla existe
+    $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") === $table_name;
+    
+    // Si la tabla no existe, intentar crearla
+    if (!$table_exists) {
+        // Verificar si el modelo está disponible y usarlo para crear la tabla
+        if (class_exists('VesConverter\\Models\\ConverterModel')) {
+            \VesConverter\Models\ConverterModel::create_table();
+            // Verificar nuevamente si la tabla se creó correctamente
+            $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") === $table_name;
+            
+            if (!$table_exists) {
+                // Ocultar el error real para no exponer información sensible
+                wp_send_json_error(array('message' => __('Failed to save rates due to database configuration. Please contact the administrator.', 'ves-converter')));
+                return;
+            }
+        } else {
+            // Si no podemos acceder al modelo, mostramos un error genérico
+            wp_send_json_error(array('message' => __('Failed to save rates. Database configuration issue.', 'ves-converter')));
+            return;
+        }
+    }
+    
+    // Silenciar errores directos de la base de datos
+    $wpdb->suppress_errors(true);
     $result = $wpdb->insert(
         $table_name,
         array(
@@ -155,8 +182,11 @@ function ves_converter_test_save_callback() {
     );
     
     if ($result === false) {
-        wp_send_json_error(array('message' => $wpdb->last_error));
+        // Registrar el error internamente para debugging pero no exponerlo al usuario
+        error_log("VES Converter Database Error: " . $wpdb->last_error);
+        wp_send_json_error(array('message' => __('Failed to save rates. Please try again later.', 'ves-converter')));
+        return;
     }
     
-    wp_send_json_success();
+    wp_send_json_success(array('message' => __('Rates saved successfully.', 'ves-converter')));
 }
