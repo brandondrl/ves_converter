@@ -512,8 +512,8 @@ jQuery(document).ready(function($) {
             url: '<?php echo admin_url('admin-ajax.php'); ?>',
             type: 'POST',
             data: {
-                action: 'ves_converter_test_save',
-                nonce: '<?php echo wp_create_nonce('ves_converter_test_save'); ?>',
+                action: 'ves_converter_rate_save',
+                nonce: '<?php echo wp_create_nonce('ves_converter_rate_save'); ?>',
                 rate_type: rateType,
                 custom_rate: customRate
             },
