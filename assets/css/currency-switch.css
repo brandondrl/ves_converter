@@ -77,7 +77,7 @@
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background-color: #0066cc;
+    background-color: #009933; /* Verde por defecto (USD) */
     color: white;
     border: none;
     font-size: 24px;
@@ -127,9 +127,9 @@
     transform: translateY(50px);
 }
 
-/* Estado activo (Bs) */
+/* Estado activo (Bs) - no definir color de fondo aquí, se define dinámicamente en JS */
 .ves-currency-switch.switched {
-    background-color: #009933;
+    /* El color se define dinámicamente en JavaScript basado en el tipo de tasa */
 }
 
 .ves-currency-switch.switched .usd-icon {

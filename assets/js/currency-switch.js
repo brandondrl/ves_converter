@@ -10,6 +10,7 @@
     let currentCurrency = 'usd'; // Moneda actual (usd o bs)
     let originalPrices = {}; // Almacena los precios originales
     let rateValue = 0; // Valor de la tasa seleccionada
+    let rateType = 'bcv'; // Tipo de tasa seleccionada
     let processedElements = []; // Elementos ya procesados
     let isProcessing = false; // Bandera para evitar procesamiento simultáneo
     
@@ -19,6 +20,9 @@
         if (typeof vesCurrencyData !== 'undefined') {
             // Obtener el valor de la tasa seleccionada
             rateValue = vesCurrencyData.rate_value || 0;
+            
+            // Obtener el tipo de tasa seleccionada
+            rateType = vesCurrencyData.selected_rate || 'bcv';
             
             // Configurar moneda inicial
             if (vesCurrencyData.initial_currency) {
@@ -342,20 +346,27 @@
      */
     function updateSwitchUI() {
         const $switch = $('#ves-currency-switch');
+        const rate_info = $('.ves-rate-tag');
         
+        // Cambiar estilos del botón
         if (currentCurrency === 'usd') {
             $switch.removeClass('switched');
+            // Verde para USD
+            $switch.css('background-color', '#009933');
+            rate_info.css('background-color', 'rgba(0, 153, 51, 0.8)');
         } else {
             $switch.addClass('switched');
-        }
-
-        // Actualizar también la etiqueta de tasa con información dinámica
-        const rate_info = $('.ves-rate-tag');
-
-        if (currentCurrency === 'usd') {
-            rate_info.css('background-color', 'rgba(0, 102, 204, 0.8)');
-        } else {
-            rate_info.css('background-color', 'rgba(0, 153, 51, 0.8)');
+            
+            // Colores según tipo de tasa
+            if (rateType === 'bcv') {
+                // Azul para BCV
+                $switch.css('background-color', '#0066cc');
+                rate_info.css('background-color', 'rgba(0, 102, 204, 0.8)');
+            } else {
+                // Naranja para otros tipos de tasa (average, parallel, custom)
+                $switch.css('background-color', '#FF8C00');
+                rate_info.css('background-color', 'rgba(255, 140, 0, 0.8)');
+            }
         }
     }
     
