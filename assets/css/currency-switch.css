@@ -13,6 +13,11 @@
     gap: 10px;
 }
 
+/* Prevenir traducciones automáticas - enfoque simplificado */
+.ves-currency-switch-container *[translate="no"] {
+    white-space: nowrap;
+}
+
 /* Posicionamiento */
 .ves-currency-switch-container.bottom-right {
     bottom: 20px;

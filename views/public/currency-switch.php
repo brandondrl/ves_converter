@@ -24,11 +24,11 @@ $rate_display_names = [
 $rate_display_name = isset($rate_display_names[$rate_name]) ? $rate_display_names[$rate_name] : $rate_name;
 ?>
 <div class="ves-currency-switch-container <?php echo esc_attr($atts['position']); ?>">
-    <div class="ves-rate-tag"><?php echo $rate_display_name; ?>: <?php echo $rate_value; ?></div>
-    <button id="ves-currency-switch" class="ves-currency-switch" title="<?php _e('Switch between USD and Bolivares', 'ves-converter'); ?>" aria-label="<?php _e('Change currency', 'ves-converter'); ?>">
+    <div class="ves-rate-tag" translate="no"><?php echo $rate_display_name; ?>: <?php echo $rate_value; ?></div>
+    <button id="ves-currency-switch" class="ves-currency-switch" title="<?php _e('Switch between USD and Bolivares', 'ves-converter'); ?>" aria-label="<?php _e('Change currency', 'ves-converter'); ?>" translate="no">
         <div class="ves-currency-switch-inner">
-            <span class="currency-icon usd-icon">$</span>
-            <span class="currency-icon bs-icon">Bs.</span>
+            <span class="currency-icon usd-icon" translate="no" data-nocontent="$">&#36;</span>
+            <span class="currency-icon bs-icon" translate="no" data-nocontent="Bs.">B&#115;.</span>
         </div>
     </button>
 </div> 
