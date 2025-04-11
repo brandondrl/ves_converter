@@ -165,9 +165,20 @@
         const $switch = $('#ves-currency-switch');
         
         if (currentCurrency === 'usd') {
-            $switch.removeClass('switched').text('$');
+            $switch.removeClass('switched');
         } else {
-            $switch.addClass('switched').text('Bs.');
+            $switch.addClass('switched');
+        }
+
+        // Actualizar también la etiqueta de tasa con información dinámica
+        const rate_info = $('.ves-rate-tag');
+        const rate_name = vesCurrencyData.selected_rate.toUpperCase();
+        const rate_value = formatNumber(vesCurrencyData.rate_value);
+
+        if (currentCurrency === 'usd') {
+            rate_info.css('background-color', 'rgba(0, 102, 204, 0.8)');
+        } else {
+            rate_info.css('background-color', 'rgba(0, 153, 51, 0.8)');
         }
     }
     
