@@ -1,9 +1,14 @@
 <?php
 use VesConverter\Models\ConverterModel;
 
-// Get latest rates from VES Change Getter
+// Get latest rates from VES Change Getter using model methods
 $rates = ConverterModel::get_rates_from_api();
 $last_updated = ConverterModel::get_last_updated_from_api();
+
+if (!$rates) {
+    $rates = [];
+    $last_updated = __('Unknown', 'ves-converter');
+}
 ?>
 <div class="wrap bg-gray-50 p-6">
     <div class="max-w-6xl mx-auto">
@@ -306,7 +311,7 @@ $last_updated = ConverterModel::get_last_updated_from_api();
                 <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 mt-auto">
                     <p class="text-sm text-gray-600 flex items-center">
                         <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-4h.01M9 16h.01"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                         <?php _e('Last updated:', 'ves-converter'); ?> <span class="font-medium text-green-700 ml-1"><?php echo $last_updated; ?></span>
                     </p>
@@ -536,41 +541,16 @@ jQuery(document).ready(function($) {
         var button = $(this);
         button.prop('disabled', true);
         
-        $.ajax({
-            url: '<?php echo admin_url('admin-ajax.php'); ?>',
-            type: 'POST',
-            data: {
-                action: 'ves_converter_update_rates',
-                nonce: '<?php echo wp_create_nonce('ves_converter_update_rates'); ?>'
-            },
-            success: function(response) {
-                if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '<?php _e('Success!', 'ves-converter'); ?>',
-                        text: '<?php _e('Rates have been updated successfully.', 'ves-converter'); ?>',
-                        showConfirmButton: false,
-                        timer: 1500
-                    }).then(function() {
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: '<?php _e('Error!', 'ves-converter'); ?>',
-                        text: response.data.message || '<?php _e('Failed to update rates.', 'ves-converter'); ?>'
-                    });
-                }
-            },
-            error: function() {
-                Swal.fire({
-                    icon: 'error',
-                    title: '<?php _e('Error!', 'ves-converter'); ?>',
-                    text: '<?php _e('Failed to update rates. Please try again.', 'ves-converter'); ?>'
-                });
-            },
-            complete: function() {
-                button.prop('disabled', false);
+        // Mostrar un pequeño indicador de carga
+        Swal.fire({
+            title: '<?php _e('Updating...', 'ves-converter'); ?>',
+            text: '<?php _e('Refreshing exchange rates data.', 'ves-converter'); ?>',
+            icon: 'info',
+            showConfirmButton: false,
+            timer: 1000,
+            willClose: function() {
+                // Recargar la página actual
+                window.location.reload();
             }
         });
     });
