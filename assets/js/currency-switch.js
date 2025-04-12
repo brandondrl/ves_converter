@@ -18,8 +18,8 @@
     $(document).ready(function() {
         // Obtener datos pasados desde PHP
         if (typeof vesCurrencyData !== 'undefined') {
-            // Obtener el valor de la tasa seleccionada
-            rateValue = vesCurrencyData.rate_value || 0;
+            // Obtener el valor de la tasa seleccionada y asegurar que sea un número
+            rateValue = parseFloat(vesCurrencyData.rate_value) || 0;
             
             // Obtener el tipo de tasa seleccionada
             rateType = vesCurrencyData.selected_rate || 'bcv';
@@ -354,6 +354,8 @@
             // Verde para USD
             $switch.css('background-color', '#009933');
             rate_info.css('background-color', 'rgba(0, 153, 51, 0.8)');
+            // Cambiar el texto del tag para USD
+            rate_info.text('Dólares');
         } else {
             $switch.addClass('switched');
             
@@ -363,9 +365,19 @@
                 $switch.css('background-color', '#0066cc');
                 rate_info.css('background-color', 'rgba(0, 102, 204, 0.8)');
             } else {
-                // Naranja para otros tipos de tasa (average, parallel, custom)
+                // Naranjo para otros tipos de tasa (average, parallel, custom)
                 $switch.css('background-color', '#FF8C00');
                 rate_info.css('background-color', 'rgba(255, 140, 0, 0.8)');
+            }
+            
+            // Asegurarse de que rateValue sea un número
+            const rateValueNum = parseFloat(rateValue);
+            
+            // Cambiar el texto del tag para VES mostrando el valor de la tasa
+            if (!isNaN(rateValueNum)) {
+                rate_info.text('Tasa: ' + rateValueNum.toFixed(2));
+            } else {
+                rate_info.text('Tasa: 0.00');
             }
         }
     }
