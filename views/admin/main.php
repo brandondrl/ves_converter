@@ -153,8 +153,8 @@ if (!$rates) {
                                     e.preventDefault();
                                     Swal.fire({
                                         icon: 'error',
-                                        title: '<?php _e('Error!', 'ves-converter'); ?>',
-                                        text: '<?php _e('Please enter a valid custom rate value.', 'ves-converter'); ?>'
+                                        title: '<?php _e('¡Error!', 'ves-converter'); ?>',
+                                        text: '<?php _e('Por favor, ingrese un valor válido para la tasa personalizada.', 'ves-converter'); ?>'
                                     });
                                 }
                             }
@@ -493,8 +493,8 @@ jQuery(document).ready(function($) {
         if (rateType === 'custom' && (!customRate || isNaN(customRate) || parseFloat(customRate) <= 0)) {
             Swal.fire({
                 icon: 'error',
-                title: '<?php _e('Error!', 'ves-converter'); ?>',
-                text: '<?php _e('Please enter a valid custom rate value.', 'ves-converter'); ?>'
+                title: '<?php _e('¡Error!', 'ves-converter'); ?>',
+                text: '<?php _e('Por favor, ingrese un valor válido para la tasa personalizada.', 'ves-converter'); ?>'
             });
             return;
         }
@@ -512,8 +512,8 @@ jQuery(document).ready(function($) {
                 if (response.success) {
                     Swal.fire({
                         icon: 'success',
-                        title: '<?php _e('Success!', 'ves-converter'); ?>',
-                        text: '<?php _e('Changes saved successfully.', 'ves-converter'); ?>',
+                        title: '<?php _e('¡Éxito!', 'ves-converter'); ?>',
+                        text: '<?php _e('Cambios guardados correctamente.', 'ves-converter'); ?>',
                         showConfirmButton: false,
                         timer: 1500
                     }).then(function() {
@@ -522,16 +522,16 @@ jQuery(document).ready(function($) {
                 } else {
                     Swal.fire({
                         icon: 'error',
-                        title: '<?php _e('Error!', 'ves-converter'); ?>',
-                        text: response.data.message || '<?php _e('Failed to save changes.', 'ves-converter'); ?>'
+                        title: '<?php _e('¡Error!', 'ves-converter'); ?>',
+                        text: response.data.message || '<?php _e('No se pudieron guardar los cambios.', 'ves-converter'); ?>'
                     });
                 }
             },
             error: function() {
                 Swal.fire({
                     icon: 'error',
-                    title: '<?php _e('Error!', 'ves-converter'); ?>',
-                    text: '<?php _e('Failed to save changes. Please try again.', 'ves-converter'); ?>'
+                    title: '<?php _e('¡Error!', 'ves-converter'); ?>',
+                    text: '<?php _e('No se pudieron guardar los cambios. Por favor, inténtelo de nuevo.', 'ves-converter'); ?>'
                 });
             }
         });
@@ -544,8 +544,8 @@ jQuery(document).ready(function($) {
         
         // Mostrar un pequeño indicador de carga
         Swal.fire({
-            title: '<?php _e('Updating...', 'ves-converter'); ?>',
-            text: '<?php _e('Refreshing exchange rates data.', 'ves-converter'); ?>',
+            title: '<?php _e('Actualizando...', 'ves-converter'); ?>',
+            text: '<?php _e('Obteniendo datos de tasas de cambio.', 'ves-converter'); ?>',
             icon: 'info',
             showConfirmButton: false,
             timer: 1000,
