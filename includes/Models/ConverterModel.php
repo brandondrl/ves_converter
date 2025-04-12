@@ -84,15 +84,18 @@ class ConverterModel {
         $response = wp_remote_get(self::API_URL);
         
         if (is_wp_error($response)) {
-            return wp_send_json_error(array('message' => __('Invalid response from API.', 'ves-converter')));;
+            error_log('VES Converter API Error: ' . $response->get_error_message());
+            return null;
         }
         
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
         
         if (!$data || !isset($data['success']) || !$data['success'] || !isset($data['data'])) {
-            return wp_send_json_error(array('message' => __('Failed to connect to rates API. Please try again later.', 'ves-converter')));
-        }    
+            error_log('VES Converter API Error: Invalid data format received');
+            return null;
+        }
+            
         // Cachear respuesta para esta ejecución
         $cached_response = $data;
         return $data;
@@ -109,7 +112,7 @@ class ConverterModel {
             return $data['data']['rates'];
         }
         
-       return wp_send_json_error(array('message' => __('Failed to connect to rates API. Please try again later.', 'ves-converter')));
+        return null; // Error ya registrado en fetch_api_data
     }
 
     /**
