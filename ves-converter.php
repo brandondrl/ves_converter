@@ -35,6 +35,79 @@ register_activation_hook(__FILE__, 'ves_converter_activate');
 function ves_converter_activate() {
     // Create database tables
     VesConverter\Models\ConverterModel::create_table();
+    
+    // Fetch and save initial rates
+    fetch_and_save_initial_rates();
+}
+
+/**
+ * Fetch and save initial rates from API
+ */
+function fetch_and_save_initial_rates() {
+    // Get current rates from API
+    $api_url = 'https://catalogo.grupoidsi.com/wp-json/ves-change-getter/v1/latest';
+    $response = wp_remote_get($api_url);
+    
+    if (is_wp_error($response)) {
+        error_log('VES Converter: Failed to connect to rates API during plugin activation.');
+        return;
+    }
+    
+    $body = wp_remote_retrieve_body($response);
+    $data = json_decode($body, true);
+    
+    if (!$data || !isset($data['success']) || !$data['success'] || !isset($data['data']['rates'])) {
+        error_log('VES Converter: Invalid response from API during plugin activation.');
+        return;
+    }
+    
+    $api_rates = $data['data']['rates'];
+    $current_time = current_time('mysql');
+    
+    // Por defecto, utilizamos la tasa BCV como seleccionada
+    $rate_type = 'bcv';
+    
+    // Prepare rates data
+    $rates = array(
+        'bcv' => array(
+            'value' => isset($api_rates['bcv']['value']) ? $api_rates['bcv']['value'] : 0,
+            'catch_date' => isset($api_rates['bcv']['catch_date']) ? $api_rates['bcv']['catch_date'] : $current_time,
+            'selected' => ($rate_type === 'bcv')
+        ),
+        'parallel' => array(
+            'value' => isset($api_rates['parallel']['value']) ? $api_rates['parallel']['value'] : 0,
+            'catch_date' => isset($api_rates['parallel']['catch_date']) ? $api_rates['parallel']['catch_date'] : $current_time,
+            'selected' => ($rate_type === 'parallel')
+        ),
+        'average' => array(
+            'value' => isset($api_rates['average']['value']) ? $api_rates['average']['value'] : 0,
+            'catch_date' => isset($api_rates['average']['catch_date']) ? $api_rates['average']['catch_date'] : $current_time,
+            'selected' => ($rate_type === 'average')
+        ),
+        'custom' => array(
+            'value' => 0,
+            'catch_date' => date('Y-m-d h:i:s A', strtotime('-4 hours', strtotime(gmdate('Y-m-d H:i:s')))),
+            'selected' => false
+        )
+    );
+    
+    // Guardar en la base de datos
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'ves_converter_rates';
+    
+    $wpdb->insert(
+        $table_name,
+        array(
+            'rates' => json_encode($rates),
+            'created_at' => $current_time,
+            'updated_at' => $current_time
+        ),
+        array('%s', '%s', '%s')
+    );
+    
+    if ($wpdb->last_error) {
+        error_log('VES Converter Database Error during initial rates save: ' . $wpdb->last_error);
+    }
 }
 
 // Initialize the plugin

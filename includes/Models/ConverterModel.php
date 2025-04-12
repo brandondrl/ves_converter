@@ -11,7 +11,7 @@ class ConverterModel {
      * @var string
      */
     private $table_name;
-
+    private const API_URL = 'https://catalogo.grupoidsi.com/wp-json/ves-change-getter/v1/latest';
     /**
      * Constructor
      */
@@ -176,29 +176,6 @@ class ConverterModel {
         
         wp_send_json_success(array('message' => __('Rates saved successfully.', 'ves-converter')));
     }
-    
-    /**
-     * Get conversions by user
-     * 
-     * @param int $user_id User ID
-     * @param int $limit Maximum number of records to return
-     * @return array Array of conversion records
-     */
-    public function get_user_conversions($user_id, $limit = 10) {
-        global $wpdb;
-        
-        $query = $wpdb->prepare(
-            "SELECT * FROM {$this->table_name} 
-            WHERE user_id = %d 
-            ORDER BY date_created DESC 
-            LIMIT %d",
-            $user_id,
-            $limit
-        );
-        
-        return $wpdb->get_results($query);
-    }
-
 
 
     /**
@@ -237,5 +214,31 @@ class ConverterModel {
         return $wpdb->get_results(
             "SELECT * FROM $table_name ORDER BY created_at DESC LIMIT 10", ARRAY_A
         );
+    }
+
+        /**
+     * Get all rates from the API
+     * 
+     * @param int $limit Maximum number of records to return
+     * @return array Array of rate records
+     */
+
+     public static function get_all_rates_from_api  () {
+
+        $response = wp_remote_get(self::API_URL);
+        $rates = [];
+        $last_updated = __('Unknown', 'ves-converter');
+        
+        if (!is_wp_error($response)) {
+            $body = wp_remote_retrieve_body($response);
+            $data = json_decode($body, true);
+                                    
+            if ($data && isset($data['success']) && $data['success'] && isset($data['data']['rates'])) {
+                $last_updated = date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($data['data']['update_date']));
+                return $rates = [$data['data']['rates'], $last_updated];
+            }
+
+            return null;
+        }
     }
 } 
