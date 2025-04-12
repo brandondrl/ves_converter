@@ -46,26 +46,65 @@ class ConverterModel {
         dbDelta($sql);
     }
 
-    /**
-     * Save conversion data
-     * 
-     * @param array $data Conversion data
-     * @return int|false The number of rows inserted, or false on error
+        /**
+     * Obtiene los datos crudos de la API (función interna)
+     * @return array|null Datos de la API o null en caso de error
      */
-    // public function save_conversion($data) {
-    //     global $wpdb;
+    private static function fetch_api_data($force_refresh = false) {
+        static $cached_response = null;
         
-    //     $default_data = [
-    //         'user_id' => get_current_user_id(),
-    //         'rate_type' => '',
-    //         'rate_value' => 0,
-    //         'date_created' => current_time('mysql')
-    //     ];
+        // Si tenemos respuesta cacheada y no se fuerza actualización
+        if ($cached_response !== null && !$force_refresh) {
+            return $cached_response;
+        }
+            
+        $response = wp_remote_get(self::API_URL);
         
-    //     $data = wp_parse_args($data, $default_data);
+        if (is_wp_error($response)) {
+            return wp_send_json_error(array('message' => __('Invalid response from API.', 'ves-converter')));;
+        }
         
-    //     return $wpdb->insert($this->table_name, $data);
-    // }
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+        
+        if (!$data || !isset($data['success']) || !$data['success'] || !isset($data['data'])) {
+            return wp_send_json_error(array('message' => __('Failed to connect to rates API. Please try again later.', 'ves-converter')));
+        }    
+        // Cachear respuesta para esta ejecución
+        $cached_response = $data;
+        return $data;
+    }
+
+        /**
+     * Obtiene solo las tasas de la API
+     * @return array|null Array de tasas o null en caso de error
+     */
+    public static function get_rates_from_api() {
+        $data = self::fetch_api_data();
+        
+        if ($data && isset($data['data']['rates'])) {
+            return $data['data']['rates'];
+        }
+        
+       return wp_send_json_error(array('message' => __('Failed to connect to rates API. Please try again later.', 'ves-converter')));
+    }
+
+    /**
+     * Obtiene solo la fecha de última actualización
+     * @return string Fecha formateada o "Unknown"
+     */
+    public static function get_last_updated_from_api() {
+        $data = self::fetch_api_data();
+        
+        if ($data && isset($data['data']['update_date'])) {
+            return date_i18n(
+                get_option('date_format') . ' ' . get_option('time_format'), 
+                strtotime($data['data']['update_date'])
+            );
+        }
+        
+        return __('Unknown', 'ves-converter');
+    }
 
     public static function save_rate() {
         // Verificar el nonce para seguridad
@@ -81,23 +120,8 @@ class ConverterModel {
         if (empty($rate_type)) {
             wp_send_json_error(array('message' => __('Rate type is required.', 'ves-converter')));
         }
-        
-        // Get current rates from API
-        $api_url = 'https://catalogo.grupoidsi.com/wp-json/ves-change-getter/v1/latest';
-        $response = wp_remote_get($api_url);
-        
-        if (is_wp_error($response)) {
-            wp_send_json_error(array('message' => __('Failed to connect to rates API. Please try again later.', 'ves-converter')));
-        }
-        
-        $body = wp_remote_retrieve_body($response);
-        $data = json_decode($body, true);
-        
-        if (!$data || !isset($data['success']) || !$data['success'] || !isset($data['data']['rates'])) {
-            wp_send_json_error(array('message' => __('Invalid response from API.', 'ves-converter')));
-        }
-        
-        $api_rates = $data['data']['rates'];
+        //
+        $api_rates = self::get_rates_from_api();       
         $current_time = current_time('mysql');
         
         // Prepare rates data
@@ -216,29 +240,4 @@ class ConverterModel {
         );
     }
 
-        /**
-     * Get all rates from the API
-     * 
-     * @param int $limit Maximum number of records to return
-     * @return array Array of rate records
-     */
-
-     public static function get_all_rates_from_api  () {
-
-        $response = wp_remote_get(self::API_URL);
-        $rates = [];
-        $last_updated = __('Unknown', 'ves-converter');
-        
-        if (!is_wp_error($response)) {
-            $body = wp_remote_retrieve_body($response);
-            $data = json_decode($body, true);
-                                    
-            if ($data && isset($data['success']) && $data['success'] && isset($data['data']['rates'])) {
-                $last_updated = date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($data['data']['update_date']));
-                return $rates = [$data['data']['rates'], $last_updated];
-            }
-
-            return null;
-        }
-    }
 } 
