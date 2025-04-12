@@ -1,11 +1,11 @@
 <?php
 /**
- * Currency switch view
+ * Vista del switch de moneda
  * 
- * This is the template for the currency switch button in the frontend
+ * Esta es la plantilla para el botón de cambio de moneda en el frontend
  */
 
-// Exit if accessed directly
+// Salir si se accede directamente
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -17,15 +17,15 @@ $rate_value = isset($rates_data['rates'][$rates_data['selected']]) ? number_form
 // Nombres más amigables para las tasas
 $rate_display_names = [
     'bcv' => __('BCV', 'ves-converter'),
-    'average' => __('Average', 'ves-converter'),
-    'parallel' => __('Parallel', 'ves-converter'),
-    'custom' => __('Custom', 'ves-converter')
+    'average' => __('Promedio', 'ves-converter'),
+    'parallel' => __('Paralelo', 'ves-converter'),
+    'custom' => __('Personalizada', 'ves-converter')
 ];
 $rate_display_name = isset($rate_display_names[$rate_name]) ? $rate_display_names[$rate_name] : $rate_name;
 ?>
 <div class="ves-currency-switch-container <?php echo esc_attr($atts['position']); ?>">
     <div class="ves-rate-tag" translate="no"><?php echo $rate_display_name; ?>: <?php echo $rate_value; ?></div>
-    <button id="ves-currency-switch" class="ves-currency-switch" title="<?php _e('Switch between USD and Bolivares', 'ves-converter'); ?>" aria-label="<?php _e('Change currency', 'ves-converter'); ?>" translate="no">
+    <button id="ves-currency-switch" class="ves-currency-switch" title="<?php _e('Cambiar entre USD y Bolívares', 'ves-converter'); ?>" aria-label="<?php _e('Cambiar moneda', 'ves-converter'); ?>" translate="no">
         <div class="ves-currency-switch-inner">
             <span class="currency-icon usd-icon" translate="no" data-nocontent="$">&#36;</span>
             <span class="currency-icon bs-icon" translate="no" data-nocontent="Bs.">B&#115;.</span>

@@ -1,10 +1,10 @@
 /**
- * VES Converter Public JavaScript
+ * JavaScript Público de VES Converter
  */
 (function($) {
     'use strict';
 
-    // Current rate values and type
+    // Valores y tipo de tasa actual
     let currentRates = {
         bcv: 0,
         average: 0,
@@ -13,26 +13,26 @@
     let currentRateType = 'bcv';
     let currentRateValue = 0;
     
-    // Current conversion values
+    // Valores de conversión actuales
     let currentUSD = 0;
     let currentVES = 0;
 
     // DOM Ready
     $(document).ready(function() {
-        // Initialize
+        // Inicializar
         init();
         
-        // Handle rate type change
+        // Manejar cambio de tipo de tasa
         $('#rate-type').on('change', function() {
             currentRateType = $(this).val();
             updateCurrentRate();
         });
         
-        // Handle convert to VES button
+        // Manejar botón de convertir a VES
         $('#convert-to-ves').on('click', function() {
             const usdAmount = parseFloat($('#usd-amount').val());
             if (isNaN(usdAmount) || usdAmount <= 0) {
-                showError('Please enter a valid amount in USD');
+                showError('Por favor, introduzca un monto válido en USD');
                 return;
             }
             
@@ -43,11 +43,11 @@
             showResult();
         });
         
-        // Handle convert to USD button
+        // Manejar botón de convertir a USD
         $('#convert-to-usd').on('click', function() {
             const vesAmount = parseFloat($('#ves-amount').val());
             if (isNaN(vesAmount) || vesAmount <= 0) {
-                showError('Please enter a valid amount in VES');
+                showError('Por favor, introduzca un monto válido en VES');
                 return;
             }
             
@@ -58,10 +58,10 @@
             showResult();
         });
         
-        // Handle save conversion button
+        // Manejar botón de guardar conversión
         $('#save-conversion').on('click', function() {
             if (!isLoggedIn()) {
-                showError('You must be logged in to save conversions');
+                showError('Debe iniciar sesión para guardar conversiones');
                 return;
             }
             
@@ -70,20 +70,20 @@
     });
     
     /**
-     * Initialize the converter
+     * Inicializar el conversor
      */
     function init() {
-        // Fetch latest rates
+        // Obtener tasas más recientes
         fetchLatestRates();
         
-        // Load user history if logged in
+        // Cargar historial del usuario si está conectado
         if (isLoggedIn()) {
             loadUserHistory();
         }
     }
     
     /**
-     * Fetch latest rates from the API
+     * Obtener las tasas más recientes de la API
      */
     function fetchLatestRates() {
         $.ajax({
@@ -97,46 +97,46 @@
                         parallel: parseFloat(response.rates.parallel) || 0
                     };
                     
-                    // Update rate display in select options
+                    // Actualizar visualización de tasas en opciones de selección
                     updateRateDisplay();
                     
-                    // Set current rate value
+                    // Establecer valor de tasa actual
                     updateCurrentRate();
                 }
             },
             error: function() {
-                showError('Error getting exchange rates');
+                showError('Error al obtener tasas de cambio');
             }
         });
     }
     
     /**
-     * Update rate display in select options
+     * Actualizar visualización de tasas en opciones de selección
      */
     function updateRateDisplay() {
         $('#rate-type option[value="bcv"]').text('BCV (' + currentRates.bcv.toFixed(2) + ' Bs.)');
-        $('#rate-type option[value="average"]').text('Average (' + currentRates.average.toFixed(2) + ' Bs.)');
-        $('#rate-type option[value="parallel"]').text('Parallel (' + currentRates.parallel.toFixed(2) + ' Bs.)');
+        $('#rate-type option[value="average"]').text('Promedio (' + currentRates.average.toFixed(2) + ' Bs.)');
+        $('#rate-type option[value="parallel"]').text('Paralelo (' + currentRates.parallel.toFixed(2) + ' Bs.)');
     }
     
     /**
-     * Update current rate value based on selected rate type
+     * Actualizar valor de tasa actual basado en el tipo de tasa seleccionado
      */
     function updateCurrentRate() {
         currentRateValue = currentRates[currentRateType];
     }
     
     /**
-     * Show conversion result
+     * Mostrar resultado de conversión
      */
     function showResult() {
-        const resultText = currentUSD.toFixed(2) + ' USD = ' + currentVES.toFixed(2) + ' VES (Rate: ' + currentRateValue.toFixed(2) + ')';
+        const resultText = currentUSD.toFixed(2) + ' USD = ' + currentVES.toFixed(2) + ' VES (Tasa: ' + currentRateValue.toFixed(2) + ')';
         $('#result-text').text(resultText);
         $('#result-container').removeClass('hidden').addClass('block');
     }
     
     /**
-     * Save conversion to API
+     * Guardar conversión en API
      */
     function saveConversion() {
         $.ajax({
@@ -148,20 +148,20 @@
             },
             success: function(response) {
                 if (response.success) {
-                    showSuccess('Conversion saved successfully');
-                    loadUserHistory(); // Reload history
+                    showSuccess('Conversión guardada exitosamente');
+                    loadUserHistory(); // Recargar historial
                 } else {
-                    showError(response.message || 'Error saving conversion');
+                    showError(response.message || 'Error al guardar la conversión');
                 }
             },
             error: function() {
-                showError('Error saving conversion');
+                showError('Error al guardar la conversión');
             }
         });
     }
     
     /**
-     * Load user conversion history
+     * Cargar historial de conversiones del usuario
      */
     function loadUserHistory() {
         $.ajax({
@@ -171,113 +171,118 @@
                 if (response.success && response.data) {
                     renderHistory(response.data);
                 } else {
-                    $('#history-container').html('<p>No conversions in history</p>');
+                    $('#history-container').html('<p>No hay conversiones en el historial</p>');
                 }
             },
             error: function() {
-                $('#history-container').html('<p>Error loading history</p>');
+                $('#history-container').html('<p>Error al cargar el historial</p>');
             }
         });
     }
     
     /**
-     * Render user conversion history
+     * Renderizar historial de conversiones del usuario
      * 
-     * @param {Array} data History data
+     * @param {Array} data Datos del historial
      */
     function renderHistory(data) {
         if (!data.length) {
-            $('#history-container').html('<p class="text-gray-600">No conversions in history</p>');
+            $('#history-container').html('<p class="text-gray-600">No hay conversiones en el historial</p>');
             return;
         }
         
         let html = '<table class="min-w-full divide-y divide-gray-200">';
         html += '<thead class="bg-gray-50"><tr>';
-        html += '<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>';
-        html += '<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate Type</th>';
-        html += '<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate Value</th>';
+        html += '<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>';
+        html += '<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo de Tasa</th>';
+        html += '<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor de Tasa</th>';
         html += '</tr></thead>';
         html += '<tbody class="bg-white divide-y divide-gray-200">';
         
-        data.forEach(function(item, index) {
-            const bgClass = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
-            html += '<tr class="' + bgClass + '">';
-            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + formatDate(item.date_created) + '</td>';
-            html += '<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">' + getRateTypeName(item.rate_type) + '</td>';
-            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + parseFloat(item.rate_value).toFixed(2) + '</td>';
+        data.forEach(function(item) {
+            html += '<tr>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + formatDate(item.date) + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + getRateTypeName(item.rate_type) + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + item.rate_value.toFixed(2) + ' Bs.</td>';
             html += '</tr>';
         });
         
         html += '</tbody></table>';
-        
         $('#history-container').html(html);
     }
     
     /**
-     * Get rate type display name
+     * Obtener nombre de visualización para el tipo de tasa
      * 
-     * @param {string} type Rate type
-     * @return {string} Display name
+     * @param {string} type Tipo de tasa
+     * @return {string} Nombre de visualización
      */
     function getRateTypeName(type) {
         const types = {
             bcv: 'BCV',
-            average: 'Average',
-            parallel: 'Parallel'
+            average: 'Promedio',
+            parallel: 'Paralelo',
+            custom: 'Personalizada'
         };
         
         return types[type] || type;
     }
     
     /**
-     * Format date for display
+     * Formatear fecha para visualización
      * 
-     * @param {string} dateString Date string
-     * @return {string} Formatted date
+     * @param {string} dateString Cadena de fecha
+     * @return {string} Fecha formateada
      */
     function formatDate(dateString) {
         const date = new Date(dateString);
-        return date.toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        
+        // Formatear como dd/mm/aaaa h:mm a
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        
+        let hours = date.getHours();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // La hora '0' debe ser '12'
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        
+        return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
     }
     
     /**
-     * Show error message
+     * Mostrar mensaje de error
      * 
-     * @param {string} message Error message
+     * @param {string} message Mensaje de error
      */
     function showError(message) {
         Swal.fire({
             title: 'Error',
             text: message,
             icon: 'error',
-            confirmButtonText: 'OK'
+            confirmButtonText: 'Aceptar'
         });
     }
     
     /**
-     * Show success message
+     * Mostrar mensaje de éxito
      * 
-     * @param {string} message Success message
+     * @param {string} message Mensaje de éxito
      */
     function showSuccess(message) {
         Swal.fire({
-            title: 'Success',
+            title: 'Éxito',
             text: message,
             icon: 'success',
-            confirmButtonText: 'OK'
+            confirmButtonText: 'Aceptar'
         });
     }
     
     /**
-     * Check if user is logged in
+     * Verificar si el usuario ha iniciado sesión
      * 
-     * @return {boolean} True if logged in
+     * @return {boolean} Verdadero si ha iniciado sesión
      */
     function isLoggedIn() {
         return !!$('.ves-converter-history').length;

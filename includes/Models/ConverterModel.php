@@ -2,11 +2,11 @@
 namespace VesConverter\Models;
 
 /**
- * The model for managing converter data
+ * El modelo para gestionar los datos del conversor
  */
 class ConverterModel {
     /**
-     * Table name
+     * Nombre de la tabla
      * 
      * @var string
      */
@@ -25,7 +25,7 @@ class ConverterModel {
     }
 
     /**
-     * Create plugin tables
+     * Crear tablas del plugin
      */
 
     public static function create_table() {
@@ -150,26 +150,29 @@ class ConverterModel {
             return false;
         }
         
+        // Formatear la fecha actual en formato dd/mm/aaaa h:i:s A (GMT-4)
+        $formatted_date = date('d/m/Y h:i:s A', strtotime('-4 hours', strtotime(gmdate('Y-m-d H:i:s'))));
+        
         // Preparar datos de tasas con la selección aplicada
         $processed_rates = array(
             'bcv' => array(
                 'value' => isset($rates['bcv']['value']) ? $rates['bcv']['value'] : 0,
-                'catch_date' => isset($rates['bcv']['catch_date']) ? $rates['bcv']['catch_date'] : $current_time,
+                'catch_date' => isset($rates['bcv']['catch_date']) ? $rates['bcv']['catch_date'] : $formatted_date,
                 'selected' => ($selected_type === 'bcv')
             ),
             'parallel' => array(
                 'value' => isset($rates['parallel']['value']) ? $rates['parallel']['value'] : 0,
-                'catch_date' => isset($rates['parallel']['catch_date']) ? $rates['parallel']['catch_date'] : $current_time,
+                'catch_date' => isset($rates['parallel']['catch_date']) ? $rates['parallel']['catch_date'] : $formatted_date,
                 'selected' => ($selected_type === 'parallel')
             ),
             'average' => array(
                 'value' => isset($rates['average']['value']) ? $rates['average']['value'] : 0,
-                'catch_date' => isset($rates['average']['catch_date']) ? $rates['average']['catch_date'] : $current_time,
+                'catch_date' => isset($rates['average']['catch_date']) ? $rates['average']['catch_date'] : $formatted_date,
                 'selected' => ($selected_type === 'average')
             ),
             'custom' => array(
                 'value' => ($selected_type === 'custom') ? $custom_rate : 0,
-                'catch_date' => date('Y-m-d h:i:s A', strtotime('-4 hours', strtotime(gmdate('Y-m-d H:i:s')))),
+                'catch_date' => $formatted_date,
                 'selected' => ($selected_type === 'custom')
             )
         );

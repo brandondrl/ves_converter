@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: VES Converter
- * Description: Plugin for currency conversion using exchange rates of the Sovereign Bolivar (VES) against the US Dollar (USD).
+ * Description: Plugin para la conversión de moneda usando tasas de cambio del Bolívar Soberano (VES) contra el Dólar Estadounidense (USD).
  * Version: 1.0.0
  * Author: IDSI
  * Author URI: https://grupoidsi.com
@@ -11,29 +11,29 @@
  */
 
 if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly
+    exit; // Salir si se accede directamente
 }
 
-// Define plugin constants
+// Definir constantes del plugin
 define('VES_CONVERTER_VERSION', '1.0.0');
 define('VES_CONVERTER_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('VES_CONVERTER_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-// Include core files
+// Incluir archivos principales
 require_once VES_CONVERTER_PLUGIN_DIR . 'includes/Core/Plugin.php';
 require_once VES_CONVERTER_PLUGIN_DIR . 'includes/Models/ConverterModel.php';
 
-// Use namespace
+// Usar namespace
 use VesConverter\Models\ConverterModel;
 
-// Register activation hook
+// Registrar hook de activación
 register_activation_hook(__FILE__, 'ves_converter_activate');
 
 /**
- * Plugin activation
+ * Activación del plugin
  */
 function ves_converter_activate() {
-    // Create database tables
+    // Crear tablas en la base de datos
     VesConverter\Models\ConverterModel::create_table();
     VesConverter\Models\ConverterModel::store_initial_rates();
     // Programar el cron job si no está ya programado
@@ -44,7 +44,7 @@ function ves_converter_activate() {
 }
 
 /**
- * Plugin deactivation
+ * Desactivación del plugin
  */
 function ves_converter_deactivate() {
     // Cancelar el cron al desactivar el plugin
@@ -57,16 +57,16 @@ function ves_converter_deactivate() {
 // Registrar hook de desactivación
 register_deactivation_hook(__FILE__, 'ves_converter_deactivate');
 
-// Initialize the plugin
+// Inicializar el plugin
 function ves_converter_init() {
     $plugin = new VesConverter\Core\Plugin();
     $plugin->init();
 }
 
-// Hook to WordPress init
+// Hook al init de WordPress
 add_action('plugins_loaded', 'ves_converter_init');
 
-// Add AJAX handler for rates save
+// Añadir handler AJAX para guardado de tasas
 add_action('wp_ajax_ves_converter_rate_save', 'ves_converter_rate_save_callback');
 function ves_converter_rate_save_callback() {
     try {
@@ -87,12 +87,12 @@ function ves_converter_custom_cron_schedules($schedules) {
     // Horarios para las diferentes franjas
     $schedules['ves_high_frequency'] = array(
         'interval' => 5 * MINUTE_IN_SECONDS,  // Cada 5 minutos (alta frecuencia)
-        'display' => __('Every 5 Minutes (High Priority)', 'ves-converter')
+        'display' => __('Cada 5 Minutos (Alta Prioridad)', 'ves-converter')
     );
     
     $schedules['ves_normal_frequency'] = array(
         'interval' => 15 * MINUTE_IN_SECONDS, // Cada 15 minutos (frecuencia normal)
-        'display' => __('Every 15 Minutes (Normal Priority)', 'ves-converter')
+        'display' => __('Cada 15 Minutos (Prioridad Normal)', 'ves-converter')
     );
     
     return $schedules;
