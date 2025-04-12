@@ -47,6 +47,29 @@ class ConverterModel {
     }
 
         /**
+     * Asegura que la tabla de tasas existe
+     * 
+     * @return bool True si la tabla existe o se creó correctamente
+     */
+    private static function ensure_table_exists() {
+        global $wpdb;
+        $table_name = self::get_table_name();
+        
+        // Verificar si la tabla existe
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") === $table_name;
+        
+        // Si la tabla no existe, crearla
+        if (!$table_exists) {
+            self::create_table();
+            
+            // Verificar nuevamente si la tabla se creó correctamente
+            $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") === $table_name;
+        }
+        
+        return $table_exists;
+    }
+
+        /**
      * Obtiene los datos crudos de la API (función interna)
      * @return array|null Datos de la API o null en caso de error
      */
@@ -106,85 +129,53 @@ class ConverterModel {
         return __('Unknown', 'ves-converter');
     }
 
-    public static function save_rate() {
-        // Verificar el nonce para seguridad
-        check_ajax_referer('ves_converter_rate_save', 'nonce');
-    
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'ves-converter')));
-        }
-        
-        $rate_type = isset($_POST['rate_type']) ? sanitize_text_field($_POST['rate_type']) : '';
-        $custom_rate = isset($_POST['custom_rate']) ? floatval($_POST['custom_rate']) : 0;
-        
-        if (empty($rate_type)) {
-            wp_send_json_error(array('message' => __('Rate type is required.', 'ves-converter')));
-        }
-        //
-        $api_rates = self::get_rates_from_api();       
+    /**
+     * Guarda un registro de tasas en la base de datos
+     * 
+     * @param array $rates Datos de tasas a guardar
+     * @param string $selected_type Tipo de tasa seleccionada (bcv, average, parallel, custom)
+     * @param float $custom_rate Valor personalizado si el tipo es 'custom'
+     * @return int|false ID del registro insertado o false si hay error
+     */
+    public static function store_rate_record($rates, $selected_type = 'bcv', $custom_rate = 0) {
+        global $wpdb;
+        $table_name = self::get_table_name();
         $current_time = current_time('mysql');
         
-        // Prepare rates data
-        $rates = array(
+        // Asegurar que la tabla existe
+        if (!self::ensure_table_exists()) {
+            return false;
+        }
+        
+        // Preparar datos de tasas con la selección aplicada
+        $processed_rates = array(
             'bcv' => array(
-                'value' => isset($api_rates['bcv']['value']) ? $api_rates['bcv']['value'] : 0,
-                'catch_date' => isset($api_rates['bcv']['catch_date']) ? $api_rates['bcv']['catch_date'] : $current_time,
-                'selected' => ($rate_type === 'bcv')
+                'value' => isset($rates['bcv']['value']) ? $rates['bcv']['value'] : 0,
+                'catch_date' => isset($rates['bcv']['catch_date']) ? $rates['bcv']['catch_date'] : $current_time,
+                'selected' => ($selected_type === 'bcv')
             ),
             'parallel' => array(
-                'value' => isset($api_rates['parallel']['value']) ? $api_rates['parallel']['value'] : 0,
-                'catch_date' => isset($api_rates['parallel']['catch_date']) ? $api_rates['parallel']['catch_date'] : $current_time,
-                'selected' => ($rate_type === 'parallel')
+                'value' => isset($rates['parallel']['value']) ? $rates['parallel']['value'] : 0,
+                'catch_date' => isset($rates['parallel']['catch_date']) ? $rates['parallel']['catch_date'] : $current_time,
+                'selected' => ($selected_type === 'parallel')
             ),
             'average' => array(
-                'value' => isset($api_rates['average']['value']) ? $api_rates['average']['value'] : 0,
-                'catch_date' => isset($api_rates['average']['catch_date']) ? $api_rates['average']['catch_date'] : $current_time,
-                'selected' => ($rate_type === 'average')
+                'value' => isset($rates['average']['value']) ? $rates['average']['value'] : 0,
+                'catch_date' => isset($rates['average']['catch_date']) ? $rates['average']['catch_date'] : $current_time,
+                'selected' => ($selected_type === 'average')
             ),
             'custom' => array(
-                'value' => ($rate_type === 'custom') ? $custom_rate : 0,
+                'value' => ($selected_type === 'custom') ? $custom_rate : 0,
                 'catch_date' => date('Y-m-d h:i:s A', strtotime('-4 hours', strtotime(gmdate('Y-m-d H:i:s')))),
-                'selected' => ($rate_type === 'custom')
+                'selected' => ($selected_type === 'custom')
             )
         );
         
-        if ($rate_type === 'custom' && $custom_rate <= 0) {
-            wp_send_json_error(array('message' => __('Custom rate must be greater than 0.', 'ves-converter')));
-        }
-        
-        // Verificar si la tabla existe, y crearla si no
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'ves_converter_rates';
-        
-        // Verificar si la tabla existe
-        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") === $table_name;
-        
-        // Si la tabla no existe, intentar crearla
-        if (!$table_exists) {
-            // Verificar si el modelo está disponible y usarlo para crear la tabla
-            if (class_exists('VesConverter\\Models\\ConverterModel')) {
-                \VesConverter\Models\ConverterModel::create_table();
-                // Verificar nuevamente si la tabla se creó correctamente
-                $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") === $table_name;
-                
-                if (!$table_exists) {
-                    // Ocultar el error real para no exponer información sensible
-                    wp_send_json_error(array('message' => __('Failed to save rates due to database configuration. Please contact the administrator.', 'ves-converter')));
-                    return;
-                }
-            } else {
-                // Si no podemos acceder al modelo, mostramos un error genérico
-                wp_send_json_error(array('message' => __('Failed to save rates. Database configuration issue.', 'ves-converter')));
-                return;
-            }
-        }
-        
-        // Silenciar errores directos de la base de datos
-        $wpdb->suppress_errors(true);
+        // Insertar en la base de datos
         $result = $wpdb->insert(
             $table_name,
             array(
-                'rates' => json_encode($rates),
+                'rates' => json_encode($processed_rates),
                 'created_at' => $current_time,
                 'updated_at' => $current_time
             ),
@@ -192,13 +183,68 @@ class ConverterModel {
         );
         
         if ($result === false) {
-            // Registrar el error internamente para debugging pero no exponerlo al usuario
             error_log("VES Converter Database Error: " . $wpdb->last_error);
-            wp_send_json_error(array('message' => __('Failed to save rates. Please try again later.', 'ves-converter')));
-            return;
+            return false;
         }
         
-        wp_send_json_success(array('message' => __('Rates saved successfully.', 'ves-converter')));
+        return $wpdb->insert_id;
+    }
+
+        /**
+     * Guarda el primer registro de tasas durante la activación del plugin
+     * Este método se puede llamar desde el hook de activación
+     * 
+     * @return int|false ID del registro insertado o false si hay error
+     */
+    public static function store_initial_rates() {
+        // Obtener tasas de la API
+        $api_rates = self::get_rates_from_api();
+        
+        // Si no podemos obtener las tasas, registrar el error pero no fallar
+        if ($api_rates === null) {
+            error_log('VES Converter: Failed to get initial rates during plugin activation');
+            return false;
+        }
+        
+        // Por defecto usar BCV como tasa seleccionada
+        return self::store_rate_record($api_rates, 'bcv');
+    }
+
+    public static function save_rate() {
+        // Verificaciones AJAX y de seguridad
+        check_ajax_referer('ves_converter_rate_save', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'ves-converter')));
+        }
+        
+        // Validar datos del formulario
+        $rate_type = isset($_POST['rate_type']) ? sanitize_text_field($_POST['rate_type']) : '';
+        $custom_rate = isset($_POST['custom_rate']) ? floatval($_POST['custom_rate']) : 0;
+        
+        if (empty($rate_type)) {
+            wp_send_json_error(array('message' => __('Rate type is required.', 'ves-converter')));
+        }
+        
+        if ($rate_type === 'custom' && $custom_rate <= 0) {
+            wp_send_json_error(array('message' => __('Custom rate must be greater than 0.', 'ves-converter')));
+        }
+        
+        // Obtener tasas de la API
+        $api_rates = self::get_rates_from_api();
+        
+        if ($api_rates === null) {
+            wp_send_json_error(array('message' => __('Failed to connect to rates API. Please try again later.', 'ves-converter')));
+        }
+        
+        // Usar el método centralizado para guardar
+        $result = self::store_rate_record($api_rates, $rate_type, $custom_rate);
+        
+        if ($result === false) {
+            wp_send_json_error(array('message' => __('Failed to save rates. Please try again later.', 'ves-converter')));
+        } else {
+            wp_send_json_success(array('message' => __('Rates saved successfully.', 'ves-converter')));
+        }
     }
 
 

@@ -35,6 +35,7 @@ register_activation_hook(__FILE__, 'ves_converter_activate');
 function ves_converter_activate() {
     // Create database tables
     VesConverter\Models\ConverterModel::create_table();
+    VesConverter\Models\ConverterModel::store_initial_rates();
 }
 
 // Initialize the plugin
