@@ -286,4 +286,152 @@ class ConverterModel {
         );
     }
 
+        /**
+     * Verifica si hay cambios en las tasas y guarda un nuevo registro si es necesario
+     * Este método es llamado por el cron job
+     * 
+     * @return bool|int False si no hay cambios o error, ID del nuevo registro si se guardó
+     */
+    public static function check_and_update_rates() {
+    // 1. Obtener el último registro guardado
+    $latest_rates = self::get_latest_rates();
+    if (!$latest_rates) {
+        return false; // No hay registros previos
+    }
+    
+    // 2. Verificar si la tasa seleccionada es custom (no actualizar en este caso)
+    $is_custom_selected = false;
+    foreach ($latest_rates as $type => $data) {
+        if (isset($data['selected']) && $data['selected'] && $type === 'custom') {
+            $is_custom_selected = true;
+            break;
+        }
+    }
+    
+    if ($is_custom_selected) {
+        return false; // No actualizar si hay una tasa custom seleccionada
+    }
+    
+    // 3. Obtener tasas actuales de la API
+    $api_rates = self::get_rates_from_api();
+    if ($api_rates === null) {
+        error_log('VES Converter Cron: Failed to get rates from API');
+        return false;
+    }
+    
+    // 4. Comparar las tasas para ver si hay cambios
+    $has_changes = false;
+    $rate_types = ['bcv', 'parallel', 'average'];
+    
+    foreach ($rate_types as $type) {
+        if (isset($api_rates[$type]['value']) && isset($latest_rates[$type]['value'])) {
+            $api_value = (float)$api_rates[$type]['value'];
+            $db_value = (float)$latest_rates[$type]['value'];
+            
+            if (abs($api_value - $db_value) > 0.001) { // Tolerancia para comparación de flotantes
+                $has_changes = true;
+                break;
+            }
+        }
+    }
+    
+    // 5. Si hay cambios, guardar un nuevo registro
+    if ($has_changes) {
+        // Determinar cuál es la tasa seleccionada actual
+        $selected_type = 'bcv'; // Default
+        foreach ($latest_rates as $type => $data) {
+            if (isset($data['selected']) && $data['selected']) {
+                $selected_type = $type;
+                break;
+            }
+        }
+        
+        // Guardar el nuevo registro manteniendo la selección actual
+        return self::store_rate_record($api_rates, $selected_type);
+    }
+    
+    return false; // No hay cambios
+    }
+
+    /**
+     * Verifica si se deben actualizar las tasas según el horario actual
+     * 
+     * @return bool True si se debe ejecutar la actualización, False si no
+     */
+    public static function should_run_update_by_schedule() {
+        // Verificar día de la semana (no ejecutar en fin de semana)
+        $current_day = intval(date('w')); // 0 (domingo) a 6 (sábado)
+        if ($current_day === 0 || $current_day === 6) {
+            return false;
+        }
+        
+        // Obtener hora y minuto actuales (hora local según configuración WP)
+        $current_hour = intval(date('G', current_time('timestamp'))); 
+        $current_minute = intval(date('i', current_time('timestamp')));
+        $current_time_minutes = ($current_hour * 60) + $current_minute;
+        
+        // Definir franjas horarias (en minutos desde medianoche)
+        $morning_start = 8 * 60;           // 8:00 AM
+        $morning_end = 10 * 60;            // 10:00 AM
+        $morning_peak_start = 8 * 60 + 45; // 8:45 AM
+        $morning_peak_end = 9 * 60 + 15;   // 9:15 AM
+        
+        $noon_start = 12 * 60 + 30;        // 12:30 PM
+        $noon_end = 14 * 60;               // 2:00 PM
+        $noon_peak_start = 12 * 60 + 45;   // 12:45 PM
+        $noon_peak_end = 13 * 60 + 15;     // 1:15 PM
+        
+        $evening_start = 15 * 60;          // 3:00 PM
+        $evening_end = 18 * 60;            // 6:00 PM
+        $evening_peak_start = 15 * 60 + 20;// 3:20 PM
+        $evening_peak_end = 16 * 60;       // 4:00 PM
+        
+        // Verificar si estamos en alguna franja
+        $in_morning = $current_time_minutes >= $morning_start && $current_time_minutes <= $morning_end;
+        $in_morning_peak = $current_time_minutes >= $morning_peak_start && $current_time_minutes <= $morning_peak_end;
+        
+        $in_noon = $current_time_minutes >= $noon_start && $current_time_minutes <= $noon_end;
+        $in_noon_peak = $current_time_minutes >= $noon_peak_start && $current_time_minutes <= $noon_peak_end;
+        
+        $in_evening = $current_time_minutes >= $evening_start && $current_time_minutes <= $evening_end;
+        $in_evening_peak = $current_time_minutes >= $evening_peak_start && $current_time_minutes <= $evening_peak_end;
+        
+        // Determinar si debemos ejecutar o no según la franja horaria actual
+        if ($in_morning_peak || $in_noon_peak || $in_evening_peak) {
+            // En horas pico, siempre ejecutar
+            return true;
+        } else if (($in_morning && !$in_morning_peak) || 
+                ($in_noon && !$in_noon_peak) || 
+                ($in_evening && !$in_evening_peak)) {
+            // En horas normales (no pico), usar probabilidad para reducir frecuencia
+            return (rand(1, 3) === 1); // ~33% de probabilidad
+        }
+        
+        // Fuera de las franjas horarias definidas
+        return false;
+    }
+
+        /**
+     * Método principal que combina verificación de horario y actualización de tasas
+     * Este método se llama desde el callback de cron
+     * 
+     * @return bool|int False si no se actualiza, ID del registro si se creó uno nuevo
+     */
+    public static function process_scheduled_update() {
+        // Primero verificar si debemos ejecutar según horario
+        if (!self::should_run_update_by_schedule()) {
+            return false;
+        }
+        
+        // Si pasó la verificación de horario, entonces verificar y actualizar tasas
+        $result = self::check_and_update_rates();
+        
+        if ($result) {
+            // Registro de éxito
+            error_log('VES Converter Cron: Rates updated successfully with ID: ' . $result);
+        }
+        
+        return $result;
+    }
+
 } 
