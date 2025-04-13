@@ -4,7 +4,7 @@
     <div class="max-w-6xl mx-auto">
         <div class="mb-8">
             <h2 class="text-xl font-semibold text-gray-800"><?php _e('VES Converter Management', 'ves-converter'); ?></h2>
-            <p class="text-gray-600 mt-2"><?php _e('Monitor usage and integrate with external systems.', 'ves-converter'); ?></p>
+            <p class="text-gray-600 mt-2"><?php _e('Monitor usage and integrate with external systems', 'ves-converter'); ?></p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
