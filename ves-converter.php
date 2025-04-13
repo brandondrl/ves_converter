@@ -2,7 +2,7 @@
 /**
  * Plugin Name: VES Converter
  * Description: Plugin para la conversión de moneda usando tasas de cambio del Bolívar Soberano (VES) contra el Dólar Estadounidense (USD).
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: IDSI
  * Author URI: https://grupoidsi.com
  * License: GPL v2 or later
@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Definir constantes del plugin
-define('VES_CONVERTER_VERSION', '1.0.0');
+define('VES_CONVERTER_VERSION', '1.1.0');
 define('VES_CONVERTER_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('VES_CONVERTER_PLUGIN_URL', plugin_dir_url(__FILE__));
 
