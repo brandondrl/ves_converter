@@ -14,7 +14,7 @@
                     <h3 class="text-lg font-medium text-gray-800"><?php _e('Usage Statistics', 'ves-converter'); ?></h3>
                 </div>
                 <div class="p-6">
-                    <p class="text-gray-600"><?php _e('Statistics about converter usage will be shown here soon.', 'ves-converter'); ?></p>
+                    <p class="text-gray-600"><?php _e('Statistics about converter usage will be shown here soon', 'ves-converter'); ?></p>
                     
                     <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="bg-blue-50 p-4 rounded-md">
