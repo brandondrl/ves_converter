@@ -92,7 +92,7 @@ if (!$rates) {
                                     ?>
                                 </option>
                                 <option value="custom"><?php _e('Tasa Personalizada', 'ves-converter'); ?></option>
-                            </select>
+                                    </select>
                             
                             <div id="custom-rate-field" class="mt-4 hidden">
                                 <label for="custom_rate_value" class="block text-sm font-medium text-gray-700 mb-1"><?php _e('Valor de Tasa Personalizada', 'ves-converter'); ?></label>
