@@ -84,7 +84,11 @@ class ConverterModel {
         $response = wp_remote_get(self::API_URL);
         
         if (is_wp_error($response)) {
-            error_log('VES Converter API Error: ' . $response->get_error_message());
+            $error_message = $response->get_error_message();
+            $error_code = $response->get_error_code();
+            error_log("VES Converter API Error: Code - $error_code, Message - $error_message");
+
+
             return null;
         }
         
@@ -440,4 +444,21 @@ class ConverterModel {
         return $result;
     }
 
-} 
+    /**
+     * Elimina todos los registros de la tabla de tasas
+     *
+     * @return bool True si se eliminaron los registros, False si hubo un error
+     */
+    public static function delete_all_records() {
+        global $wpdb;
+        $table_name = self::get_table_name();
+
+        $result = $wpdb->query("TRUNCATE TABLE $table_name");
+
+        if ($result === false) {
+            error_log("VES Converter Database Error while deleting all records: " . $wpdb->last_error);
+            return false;
+        }
+        return true;
+    }
+}
