@@ -461,4 +461,37 @@ class ConverterModel {
         }
         return true;
     }
+
+    /**
+     * Obtiene los registros paginados de la base de datos
+     *
+     * @param int $limit Número de registros por página
+     * @param int $offset Offset para la consulta
+     * @return array Registros paginados
+     */
+    public static function get_paginated_rates($limit, $offset) {
+        global $wpdb;
+        $table_name = self::get_table_name();
+
+        return $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM $table_name ORDER BY created_at DESC LIMIT %d OFFSET %d",
+                $limit,
+                $offset
+            ),
+            ARRAY_A
+        );
+    }
+
+    /**
+     * Obtiene el número total de registros en la base de datos
+     *
+     * @return int Número total de registros
+     */
+    public static function get_total_rate_count() {
+        global $wpdb;
+        $table_name = self::get_table_name();
+
+        return (int) $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
+    }
 }
