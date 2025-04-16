@@ -1,14 +1,42 @@
 <?php if (!empty($rate_history)) : ?>
 <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm mx-auto max-w-4xl">
     <table class="w-full divide-y divide-gray-200">
-        <thead>
-            <tr class="bg-gray-100">
-                <th class="px-4 py-3 text-left"><?php _e('Tipo de Tasa', 'ves-converter'); ?></th>
-                <th class="px-4 py-3 text-left"><?php _e('Valor de Tasa', 'ves-converter'); ?></th>
-                <th class="px-4 py-3 text-left"><?php _e('Fecha', 'ves-converter'); ?></th>
-                <th class="px-4 py-3 text-left"><?php _e('Hora (GMT-4)', 'ves-converter'); ?></th>
-            </tr>
-        </thead>
+    <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="group px-4 py-3 text-left">
+                                        <div class="flex items-center space-x-1 text-xs font-medium text-gray-600 uppercase tracking-wider">
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                            </svg>
+                                            <span><?php _e('Tipo de Tasa', 'ves-converter'); ?></span>
+                                        </div>
+                                    </th>
+                                    <th class="group px-4 py-3 text-left">
+                                        <div class="flex items-center space-x-1 text-xs font-medium text-gray-600 uppercase tracking-wider">
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            <span><?php _e('Valor de Tasa', 'ves-converter'); ?></span>
+                                        </div>
+                                    </th>
+                                    <th class="group px-4 py-3 text-left">
+                                        <div class="flex items-center space-x-1 text-xs font-medium text-gray-600 uppercase tracking-wider">
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                            <span><?php _e('Fecha', 'ves-converter'); ?></span>
+                                        </div>
+                                    </th>
+                                    <th class="group px-4 py-3 text-left">
+                                        <div class="flex items-center space-x-1 text-xs font-medium text-gray-600 uppercase tracking-wider">
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            <span><?php _e('Hora (GMT-4)', 'ves-converter'); ?></span>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
         <tbody class="bg-white divide-y divide-gray-200">
             <?php foreach ($rate_history as $index => $record) : 
                 $rates_data = json_decode($record['rates'], true);
