@@ -22,9 +22,11 @@ define('VES_CONVERTER_PLUGIN_URL', plugin_dir_url(__FILE__));
 // Incluir archivos principales
 require_once VES_CONVERTER_PLUGIN_DIR . 'includes/Core/Plugin.php';
 require_once VES_CONVERTER_PLUGIN_DIR . 'includes/Models/ConverterModel.php';
+require_once VES_CONVERTER_PLUGIN_DIR . 'includes/Models/Helper.php';
 
 // Usar namespace
 use VesConverter\Models\ConverterModel;
+use VesConverter\Models\Helper;
 
 // Registrar hook de activación
 register_activation_hook(__FILE__, 'ves_converter_activate');
@@ -103,4 +105,34 @@ add_action('ves_converter_update_rates_event', 'ves_converter_cron_update_rates_
 function ves_converter_cron_update_rates_callback() {
     // Delegar toda la lógica al modelo
     VesConverter\Models\ConverterModel::process_scheduled_update();
+}
+
+/** Pagination ajax driver for rates tables */
+add_action('wp_ajax_load_paginated_rates', 'load_paginated_rates');
+function load_paginated_rates() {
+    if (!isset($_POST['page']) || !is_numeric($_POST['page'])) {
+        wp_send_json_error(['message' => __('Página inválida.', 'ves-converter')]);
+    }
+
+    $current_page = intval($_POST['page']);
+    $records_per_page = 10;
+
+    // Obtener los datos de la tabla
+    $rates_data = Helper::ves_converter_get_rates_data($current_page, $records_per_page);
+
+    // Validar datos
+    $rate_history = $rates_data['rate_history'] ?? [];
+    $total_pages = $rates_data['total_pages'] ?? 0;
+    $current_page = $rates_data['current_page'] ?? 1;
+
+    if (empty($rate_history)) {
+        wp_send_json_error(['message' => __('No se encontraron registros.', 'ves-converter')]);
+    }
+
+    // Renderizar el archivo parcial
+    ob_start();
+    include VES_CONVERTER_PLUGIN_DIR . 'views/admin/rates-table.php';
+    $html = ob_get_clean();
+
+    wp_send_json_success(['html' => $html]);
 }

@@ -1,5 +1,6 @@
 <?php
 use VesConverter\Models\ConverterModel;
+use VesConverter\Models\Helper;
 
 // Get latest rates from VES Change Getter using model methods
 $rates = ConverterModel::get_rates_from_api();
@@ -9,6 +10,16 @@ if (!$rates) {
     $rates = [];
     $last_updated = __('Unknown', 'ves-converter');
 }
+
+// Obtener el número de página actual desde la URL
+$current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$records_per_page = 10;
+
+// Obtener los datos de la tabla
+$rates_data = Helper::ves_converter_get_rates_data($current_page, $records_per_page);
+$rate_history = $rates_data['rate_history'];
+$total_pages = $rates_data['total_pages'];
+$current_page = $rates_data['current_page'];
 ?>
 <div class="wrap bg-gray-50 p-6">
     <div class="max-w-6xl mx-auto">
@@ -323,7 +334,7 @@ if (!$rates) {
         <div class="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden mt-4">
             <div class="bg-amber-50 p-4 border-b border-amber-100">
                 <h3 class="text-lg font-medium text-amber-700 flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                     </svg>
                     <?php _e('Historial de Tasas', 'ves-converter'); ?>
@@ -333,134 +344,114 @@ if (!$rates) {
                 <p class="mb-4 text-gray-600"><?php _e('Tasas de cambio guardadas previamente:', 'ves-converter'); ?></p>
                 
                 <?php if (!empty($rate_history)) : ?>
-                <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm mx-auto max-w-4xl">
-                    <table class="w-full divide-y divide-gray-200">
-                        <thead>
-                            <tr class="bg-gray-100">
-                                <th class="group px-4 py-3 text-left">
-                                    <div class="flex items-center space-x-1 text-xs font-medium text-gray-600 uppercase tracking-wider">
-                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                        </svg>
-                                        <span><?php _e('Tipo de Tasa', 'ves-converter'); ?></span>
-                                    </div>
-                                </th>
-                                <th class="group px-4 py-3 text-left">
-                                    <div class="flex items-center space-x-1 text-xs font-medium text-gray-600 uppercase tracking-wider">
-                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        <span><?php _e('Valor de Tasa', 'ves-converter'); ?></span>
-                                    </div>
-                                </th>
-                                <th class="group px-4 py-3 text-left">
-                                    <div class="flex items-center space-x-1 text-xs font-medium text-gray-600 uppercase tracking-wider">
-                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                        </svg>
-                                        <span><?php _e('Fecha', 'ves-converter'); ?></span>
-                                    </div>
-                                </th>
-                                <th class="group px-4 py-3 text-left">
-                                    <div class="flex items-center space-x-1 text-xs font-medium text-gray-600 uppercase tracking-wider">
-                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        <span><?php _e('Hora (GMT-4)', 'ves-converter'); ?></span>
-                                    </div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <?php foreach ($rate_history as $index => $record) : 
-                                $rates_data = json_decode($record['rates'], true);
-                                
-                                // Encontrar la tasa seleccionada
-                                $selected_type = '';
-                                $selected_value = 0;
-                                $selected_date = '';
-                                
-                                foreach ($rates_data as $type => $data) {
-                                    if (isset($data['selected']) && $data['selected']) {
-                                        $selected_type = $type;
-                                        $selected_value = $data['value'];
-                                        $selected_date = $data['catch_date'];
-                                        break;
+                <div id="rates-table-container">
+                    <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm mx-auto max-w-4xl">
+                        <table class="w-full divide-y divide-gray-200">
+               
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <?php foreach ($rate_history as $index => $record) : 
+                                    $rates_data = json_decode($record['rates'], true);
+                                    
+                                    // Encontrar la tasa seleccionada
+                                    $selected_type = '';
+                                    $selected_value = 0;
+                                    $selected_date = '';
+                                    
+                                    foreach ($rates_data as $type => $data) {
+                                        if (isset($data['selected']) && $data['selected']) {
+                                            $selected_type = $type;
+                                            $selected_value = $data['value'];
+                                            $selected_date = $data['catch_date'];
+                                            break;
+                                        }
                                     }
-                                }
-                                
-                                // Si no hay tasa seleccionada, mostrar la primera
-                                if (empty($selected_type) && !empty($rates_data)) {
-                                    $first_type = array_key_first($rates_data);
-                                    $selected_type = $first_type;
-                                    $selected_value = $rates_data[$first_type]['value'];
-                                    $selected_date = $rates_data[$first_type]['catch_date'];
-                                }
-                                
-                                // Formatear fecha y hora del created_at
-                                $created_timestamp = strtotime($record['created_at']);
-                                // Ajustar a GMT-4
-                                $gmt4_timestamp = strtotime('-4 hours', $created_timestamp);
-                                $date_formatted = date('d/m/Y', $gmt4_timestamp);
-                                $time_formatted = date('h:i:s A', $gmt4_timestamp);
-                                
-                                // Configurar color y etiqueta según el tipo
-                                $badge_color = '';
-                                $type_label = '';
-                                
-                                switch ($selected_type) {
-                                    case 'bcv':
-                                        $badge_color = 'bg-blue-500 text-white border border-blue-600';
-                                        $type_label = 'BCV';
-                                        $hover_color = 'hover:bg-blue-50';
-                                        break;
-                                    case 'average':
-                                        $badge_color = 'bg-green-100 text-green-800 border border-green-200';
-                                        $type_label = __('Promedio', 'ves-converter');
-                                        $hover_color = 'hover:bg-green-50';
-                                        break;
-                                    case 'parallel':
-                                        $badge_color = 'bg-red-100 text-red-800 border border-red-200';
-                                        $type_label = __('Paralelo', 'ves-converter');
-                                        $hover_color = 'hover:bg-red-50';
-                                        break;
-                                    case 'custom':
-                                        $badge_color = 'bg-gray-100 text-gray-800 border border-gray-200';
-                                        $type_label = __('Personalizada', 'ves-converter');
-                                        $hover_color = 'hover:bg-gray-50';
-                                        break;
-                                    default:
-                                        $badge_color = 'bg-gray-100 text-gray-800 border border-gray-200';
-                                        $type_label = __('Desconocido', 'ves-converter');
-                                        $hover_color = 'hover:bg-gray-50';
-                                        break;
-                                }
-                                
-                                // Alternar colores de fila
-                                $row_class = ($index % 2 === 0) ? 'bg-white' : 'bg-gray-50';
-                            ?>
-                            <tr class="<?php echo $row_class . ' ' . $hover_color; ?> transition-colors duration-150">
-                                <td class="px-4 py-3 whitespace-nowrap">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium <?php echo $badge_color; ?>">
-                                        <?php echo esc_html($type_label); ?>
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 whitespace-nowrap">
-                                    <div class="text-sm font-semibold">
-                                        <?php echo esc_html(number_format($selected_value, 2)); ?>
-                                        <span class="text-xs font-normal text-gray-500">Bs.</span>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 whitespace-nowrap">
-                                    <div class="text-sm text-gray-700"><?php echo esc_html($date_formatted); ?></div>
-                                </td>
-                                <td class="px-4 py-3 whitespace-nowrap">
-                                    <div class="text-sm text-gray-700"><?php echo esc_html($time_formatted); ?></div>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                                    
+                                    // Si no hay tasa seleccionada, mostrar la primera
+                                    if (empty($selected_type) && !empty($rates_data)) {
+                                        $first_type = array_key_first($rates_data);
+                                        $selected_type = $first_type;
+                                        $selected_value = $rates_data[$first_type]['value'];
+                                        $selected_date = $rates_data[$first_type]['catch_date'];
+                                    }
+                                    
+                                    // Formatear fecha y hora del created_at
+                                    $created_timestamp = strtotime($record['created_at']);
+                                    // Ajustar a GMT-4
+                                    $gmt4_timestamp = strtotime('-4 hours', $created_timestamp);
+                                    $date_formatted = date('d/m/Y', $gmt4_timestamp);
+                                    $time_formatted = date('h:i:s A', $gmt4_timestamp);
+                                    
+                                    // Configurar color y etiqueta según el tipo
+                                    $badge_color = '';
+                                    $type_label = '';
+                                    
+                                    switch ($selected_type) {
+                                        case 'bcv':
+                                            $badge_color = 'bg-blue-500 text-white border border-blue-600';
+                                            $type_label = 'BCV';
+                                            $hover_color = 'hover:bg-blue-50';
+                                            break;
+                                        case 'average':
+                                            $badge_color = 'bg-green-100 text-green-800 border border-green-200';
+                                            $type_label = __('Promedio', 'ves-converter');
+                                            $hover_color = 'hover:bg-green-50';
+                                            break;
+                                        case 'parallel':
+                                            $badge_color = 'bg-red-100 text-red-800 border border-red-200';
+                                            $type_label = __('Paralelo', 'ves-converter');
+                                            $hover_color = 'hover:bg-red-50';
+                                            break;
+                                        case 'custom':
+                                            $badge_color = 'bg-gray-100 text-gray-800 border border-gray-200';
+                                            $type_label = __('Personalizada', 'ves-converter');
+                                            $hover_color = 'hover:bg-gray-50';
+                                            break;
+                                        default:
+                                            $badge_color = 'bg-gray-100 text-gray-800 border border-gray-200';
+                                            $type_label = __('Desconocido', 'ves-converter');
+                                            $hover_color = 'hover:bg-gray-50';
+                                            break;
+                                    }
+                                    
+                                    // Alternar colores de fila
+                                    $row_class = ($index % 2 === 0) ? 'bg-white' : 'bg-gray-50';
+                                ?>
+                                <tr class="<?php echo $row_class . ' ' . $hover_color; ?> transition-colors duration-150">
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium <?php echo $badge_color; ?>">
+                                            <?php echo esc_html($type_label); ?>
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <div class="text-sm font-semibold">
+                                            <?php echo esc_html(number_format($selected_value, 2)); ?>
+                                            <span class="text-xs font-normal text-gray-500">Bs.</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <div class="text-sm text-gray-700"><?php echo esc_html($date_formatted); ?></div>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <div class="text-sm text-gray-700"><?php echo esc_html($time_formatted); ?></div>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación -->
+                    <div class="mt-4">
+                        <?php if ($total_pages > 1) : ?>
+                            <div class="flex justify-center space-x-2">
+                                <?php for ($i = 1; $i <= $total_pages; $i++) : ?>
+                                    <a href="#" class="pagination-link px-3 py-1 rounded <?php echo $i === $current_page ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'; ?>" data-page="<?php echo $i; ?>">
+                                        <?php echo $i; ?>
+                                    </a>
+                                <?php endfor; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
                 <?php else : ?>
                 <div class="text-center p-10 bg-gray-50 rounded-lg border border-gray-200">
@@ -556,4 +547,49 @@ jQuery(document).ready(function($) {
         });
     });
 });
-</script> 
+</script>
+
+<script>
+jQuery(document).ready(function($) {
+    $(document).on('click', '.pagination-link', function(e) {
+        e.preventDefault();
+
+        var page = $(this).data('page');
+        var container = $('#rates-table-container');
+
+        $.ajax({
+            url: '<?php echo admin_url('admin-ajax.php'); ?>',
+            type: 'POST',
+            data: {
+                action: 'load_paginated_rates',
+                page: page,
+                nonce: '<?php echo wp_create_nonce('load_paginated_rates'); ?>'
+            },
+            beforeSend: function() {
+                container.css('opacity', '0.5'); // Mostrar un efecto de carga
+            },
+            success: function(response) {
+                if (response.success) {
+                    container.html(response.data.html);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '<?php _e('¡Error!', 'ves-converter'); ?>',
+                        text: response.data.message || '<?php _e('No se pudieron cargar los datos.', 'ves-converter'); ?>'
+                    });
+                }
+            },
+            complete: function() {
+                container.css('opacity', '1');
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: '<?php _e('¡Error!', 'ves-converter'); ?>',
+                    text: '<?php _e('No se pudieron cargar los datos. Por favor, inténtelo de nuevo.', 'ves-converter'); ?>'
+                });
+            }
+        });
+    });
+});
+</script>
