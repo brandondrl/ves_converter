@@ -154,8 +154,8 @@ class ConverterModel {
             return false;
         }
         
-        // Formatear la fecha actual en formato dd/mm/aaaa h:i:s A (GMT-4)
-        $formatted_date = date('d/m/Y h:i:s A', strtotime('-4 hours', strtotime(gmdate('Y-m-d H:i:s'))));
+        // Usar directamente la zona horaria de WordPress en lugar de ajustes manuales
+        $formatted_date = date_i18n('d/m/Y h:i:s A', current_time('timestamp'));
         
         // Preparar datos de tasas con la selección aplicada
         $processed_rates = array(
@@ -370,14 +370,15 @@ class ConverterModel {
      */
     public static function should_run_update_by_schedule() {
         // Verificar día de la semana (no ejecutar en fin de semana)
-        $current_day = intval(date('w')); // 0 (domingo) a 6 (sábado)
+        $current_day = intval(date_i18n('w', current_time('timestamp'))); // 0 (domingo) a 6 (sábado)
         if ($current_day === 0 || $current_day === 6) {
             return false;
         }
         
         // Obtener hora y minuto actuales (hora local según configuración WP)
-        $current_hour = intval(date('G', current_time('timestamp'))); 
-        $current_minute = intval(date('i', current_time('timestamp')));
+        $current_datetime = new DateTime(current_time('mysql'));
+        $current_hour = intval($current_datetime->format('G'));
+        $current_minute = intval($current_datetime->format('i'));
         $current_time_minutes = ($current_hour * 60) + $current_minute;
         
         // Definir franjas horarias (en minutos desde medianoche)

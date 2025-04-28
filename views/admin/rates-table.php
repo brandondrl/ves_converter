@@ -32,7 +32,7 @@
                                             <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
-                                            <span><?php _e('Hora (GMT-4)', 'ves-converter'); ?></span>
+                                            <span><?php _e('Hora', 'ves-converter'); ?></span>
                                         </div>
                                     </th>
                                 </tr>
@@ -63,9 +63,8 @@
 
                 // Formatear fecha y hora del created_at
                 $created_timestamp = strtotime($record['created_at']);
-                $gmt4_timestamp = strtotime('-4 hours', $created_timestamp);
-                $date_formatted = date('d/m/Y', $gmt4_timestamp);
-                $time_formatted = date('h:i:s A', $gmt4_timestamp);
+                $date_formatted = date_i18n('d/m/Y', $created_timestamp);
+                $time_formatted = date_i18n('h:i:s A', $created_timestamp);
 
                 // Configurar color y etiqueta según el tipo
                 $badge_color = '';
