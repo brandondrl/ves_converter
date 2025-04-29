@@ -269,7 +269,7 @@ class ConverterModel {
         $table_name = $wpdb->prefix . 'ves_converter_rates';
      
         $result = $wpdb->get_row(
-            "SELECT rates FROM $table_name ORDER BY created_at DESC LIMIT 1"
+            "SELECT rates FROM $table_name ORDER BY id DESC LIMIT 1"
         );
         
         if ($result && isset($result->rates)) {
@@ -292,7 +292,7 @@ class ConverterModel {
         $table_name = self::get_table_name();
         
         return $wpdb->get_results(
-            "SELECT * FROM $table_name ORDER BY created_at DESC LIMIT 10", ARRAY_A
+            "SELECT * FROM $table_name ORDER BY id DESC LIMIT 10", ARRAY_A
         );
     }
 
@@ -476,7 +476,7 @@ class ConverterModel {
 
         return $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT * FROM $table_name ORDER BY created_at DESC LIMIT %d OFFSET %d",
+                "SELECT * FROM $table_name ORDER BY id DESC LIMIT %d OFFSET %d",
                 $limit,
                 $offset
             ),
