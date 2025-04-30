@@ -370,15 +370,17 @@ class ConverterModel {
      */
     public static function should_run_update_by_schedule() {
         // Verificar día de la semana (no ejecutar en fin de semana)
-        $current_day = intval(date_i18n('w', current_time('timestamp'))); // 0 (domingo) a 6 (sábado)
+        $current_timestamp = current_time('timestamp');
+        $current_day = intval(date('w', $current_timestamp)); // 0 (domingo) a 6 (sábado)
+        
         if ($current_day === 0 || $current_day === 6) {
+            error_log('VES Converter: Skipping rate update - weekend day detected: ' . $current_day);
             return false;
         }
         
-        // Obtener hora y minuto actuales (hora local según configuración WP)
-        $current_datetime = new DateTime(current_time('mysql'));
-        $current_hour = intval($current_datetime->format('G'));
-        $current_minute = intval($current_datetime->format('i'));
+        // Obtener hora actual (formato 24h) y minuto actual
+        $current_hour = intval(date('G', $current_timestamp));
+        $current_minute = intval(date('i', $current_timestamp));
         $current_time_minutes = ($current_hour * 60) + $current_minute;
         
         // Definir franjas horarias (en minutos desde medianoche)
@@ -410,15 +412,21 @@ class ConverterModel {
         // Determinar si debemos ejecutar o no según la franja horaria actual
         if ($in_morning_peak || $in_noon_peak || $in_evening_peak) {
             // En horas pico, siempre ejecutar
+            error_log('VES Converter: Running update - peak time detected: ' . date('H:i', $current_timestamp));
             return true;
         } else if (($in_morning && !$in_morning_peak) || 
                 ($in_noon && !$in_noon_peak) || 
                 ($in_evening && !$in_evening_peak)) {
             // En horas normales (no pico), usar probabilidad para reducir frecuencia
-            return (rand(1, 3) === 1); // ~33% de probabilidad
+            $random = rand(1, 3);
+            $should_run = ($random === 1); // ~33% de probabilidad
+            error_log('VES Converter: Normal time period detected: ' . date('H:i', $current_timestamp) . 
+                      ', Random value: ' . $random . ', Should run: ' . ($should_run ? 'Yes' : 'No'));
+            return $should_run;
         }
         
         // Fuera de las franjas horarias definidas
+        error_log('VES Converter: Skipping update - outside operational hours: ' . date('H:i', $current_timestamp));
         return false;
     }
 
@@ -429,10 +437,15 @@ class ConverterModel {
      * @return bool|int False si no se actualiza, ID del registro si se creó uno nuevo
      */
     public static function process_scheduled_update() {
+        error_log('VES Converter Cron: Starting scheduled update process at ' . date('Y-m-d H:i:s', current_time('timestamp')));
+        
         // Primero verificar si debemos ejecutar según horario
         if (!self::should_run_update_by_schedule()) {
+            error_log('VES Converter Cron: Schedule check determined not to run at this time');
             return false;
         }
+        
+        error_log('VES Converter Cron: Schedule check passed, proceeding with rate check');
         
         // Si pasó la verificación de horario, entonces verificar y actualizar tasas
         $result = self::check_and_update_rates();
@@ -440,6 +453,8 @@ class ConverterModel {
         if ($result) {
             // Registro de éxito
             error_log('VES Converter Cron: Rates updated successfully with ID: ' . $result);
+        } else {
+            error_log('VES Converter Cron: No rate update performed (no changes or custom rate selected)');
         }
         
         return $result;
