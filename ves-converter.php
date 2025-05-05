@@ -40,7 +40,7 @@ function ves_converter_activate() {
     VesConverter\Models\ConverterModel::store_initial_rates();
     // Programar el cron job si no está ya programado
     if (!wp_next_scheduled('ves_converter_update_rates_event')) {
-        // Programar para que se ejecute cada 5 minutos, y el callback decidirá si debe realmente ejecutarse
+        // Programar para que se ejecute cada 30 minutos, y el callback decidirá si debe realmente ejecutarse
         wp_schedule_event(time(), 'ves_high_frequency', 'ves_converter_update_rates_event');
     }
 }
@@ -88,8 +88,8 @@ function ves_converter_rate_save_callback() {
 function ves_converter_custom_cron_schedules($schedules) {
     // Horarios para las diferentes franjas
     $schedules['ves_high_frequency'] = array(
-        'interval' => 5 * MINUTE_IN_SECONDS,  // Cada 5 minutos (alta frecuencia)
-        'display' => __('Cada 5 Minutos (Alta Prioridad)', 'ves-converter')
+        'interval' => 30 * MINUTE_IN_SECONDS,  // Cada 30 minutos (media hora)
+        'display' => __('Cada 30 Minutos (Alta Prioridad)', 'ves-converter')
     );
     
     $schedules['ves_normal_frequency'] = array(

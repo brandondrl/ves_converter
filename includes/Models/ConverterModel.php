@@ -397,9 +397,9 @@ class ConverterModel {
         ];
         
         // Verificar si estamos en uno de los momentos específicos de ejecución
-        // Permitir un margen de +/- 2 minutos para compensar retrasos del cron
+        // Permitir un margen de +/- 15 minutos para compensar retrasos y frecuencia del cron
         foreach ($execution_times as $time) {
-            if (abs($current_time_minutes - $time) <= 2) {
+            if (abs($current_time_minutes - $time) <= 15) {
                 error_log('VES Converter: Running update - scheduled time detected: ' . date('H:i', $current_timestamp));
                 return true;
             }

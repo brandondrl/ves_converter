@@ -201,8 +201,7 @@ class TestRunner {
             $results['message'] .= '. Error al programar nuevo evento';
         } else {
             $results['success'] = true;
-            $next_run = wp_next_scheduled('ves_converter_update_rates_event');
-            $results['message'] .= '. Nuevo evento programado para: ' . date('Y-m-d H:i:s', $next_run);
+            $results['message'] .= '. Nuevo evento programado con frecuencia: Cada 30 Minutos';
         }
         
         return $results;

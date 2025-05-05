@@ -380,8 +380,12 @@ if ($found_log && !empty($log_content)) {
                                         <td class="py-2 px-3 text-sm">
                                             <?php 
                                             if ($job['interval'] > 0) {
-                                                // Format interval in minutes
-                                                echo esc_html(floor($job['interval'] / 60) . ' minutos');
+                                                // Format interval in minutes or hours
+                                                if ($job['interval'] >= 3600) {
+                                                    echo esc_html(floor($job['interval'] / 3600) . ' horas');
+                                                } else {
+                                                    echo esc_html(floor($job['interval'] / 60) . ' minutos');
+                                                }
                                             } else {
                                                 echo 'N/A';
                                             }
@@ -465,7 +469,7 @@ if ($found_log && !empty($log_content)) {
                 
                 <div class="pt-2 border-t border-gray-100">
                     <p class="text-sm text-gray-500">
-                        <?php _e('Nota: El sistema ejecutará la comprobación de actualizaciones en estos horarios específicos durante días laborables (lunes a viernes), con un margen de ±2 minutos. Solo se guardarán registros nuevos si se detecta un cambio en la tasa del dólar.', 'ves-converter'); ?>
+                        <?php _e('Nota: El sistema ejecutará la comprobación de actualizaciones en estos horarios específicos durante días laborables (lunes a viernes), con un margen de ±15 minutos. Solo se guardarán registros nuevos si se detecta un cambio en la tasa del dólar.', 'ves-converter'); ?>
                     </p>
                 </div>
             </div>
