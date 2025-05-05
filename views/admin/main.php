@@ -71,8 +71,22 @@ $current_page = $rates_data['current_page'];
                     <form method="post" action="">
                         <?php wp_nonce_field('ves_converter_settings', 'ves_converter_nonce'); ?>
                         <div class="mb-6">
+                            <?php
+                            // Obtener la tasa seleccionada actualmente en la base de datos
+                            $current_rates_info = ConverterModel::get_latest_rates();
+                            $active_rate_type = 'bcv'; // Valor por defecto
+                            
+                            if (!empty($current_rates_info)) {
+                                foreach ($current_rates_info as $type => $data) {
+                                    if (isset($data['selected']) && $data['selected']) {
+                                        $active_rate_type = $type;
+                                        break;
+                                    }
+                                }
+                            }
+                            ?>
                             <select name="default_rate_type" id="default_rate_type" class="block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                <option value="bcv">
+                                <option value="bcv" <?php selected($active_rate_type, 'bcv'); ?>>
                                     <?php 
                                     _e('BCV (Banco Central)', 'ves-converter');
                                     if (!empty($rates) && isset($rates['bcv']) && isset($rates['bcv']['value'])) {
@@ -82,7 +96,7 @@ $current_page = $rates_data['current_page'];
                                     }
                                     ?>
                                 </option>
-                                <option value="average">
+                                <option value="average" <?php selected($active_rate_type, 'average'); ?>>
                                     <?php 
                                     _e('Tasa Promedio', 'ves-converter');
                                     if (!empty($rates) && isset($rates['average']) && isset($rates['average']['value'])) {
@@ -92,7 +106,7 @@ $current_page = $rates_data['current_page'];
                                     }
                                     ?>
                                 </option>
-                                <option value="parallel">
+                                <option value="parallel" <?php selected($active_rate_type, 'parallel'); ?>>
                                     <?php 
                                     _e('Dolar Paralelo', 'ves-converter');
                                     if (!empty($rates) && isset($rates['parallel']) && isset($rates['parallel']['value'])) {
@@ -102,10 +116,10 @@ $current_page = $rates_data['current_page'];
                                     }
                                     ?>
                                 </option>
-                                <option value="custom"><?php _e('Tasa Personalizada', 'ves-converter'); ?></option>
+                                <option value="custom" <?php selected($active_rate_type, 'custom'); ?>><?php _e('Tasa Personalizada', 'ves-converter'); ?></option>
                                     </select>
                             
-                            <div id="custom-rate-field" class="mt-4 hidden">
+                            <div id="custom-rate-field" class="mt-4 <?php echo ($active_rate_type != 'custom') ? 'hidden' : ''; ?>">
                                 <label for="custom_rate_value" class="block text-sm font-medium text-gray-700 mb-1"><?php _e('Valor de Tasa Personalizada', 'ves-converter'); ?></label>
                                 <div class="flex items-center gap-2">
                                     <input type="number" 
@@ -114,15 +128,21 @@ $current_page = $rates_data['current_page'];
                                            step="0.01" 
                                            min="0" 
                                            class="block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                           placeholder="<?php _e('Ingrese valor de tasa personalizada', 'ves-converter'); ?>">
+                                           placeholder="<?php _e('Ingrese valor de tasa personalizada', 'ves-converter'); ?>"
+                                           <?php
+                                           // Mostrar el valor personalizado si está disponible
+                                           if ($active_rate_type == 'custom' && isset($current_rates_info['custom']['value'])) {
+                                               echo 'value="' . esc_attr($current_rates_info['custom']['value']) . '"';
+                                           }
+                                           ?>>
                                     <span class="text-gray-500 whitespace-nowrap ml-2">Bs.</span>
                                 </div>
                                 <p class="mt-1 text-sm text-gray-500"><?php _e('Ingrese un valor de tasa de cambio personalizado con hasta 2 decimales', 'ves-converter'); ?></p>
                             </div>
-                            
-                            <p class="mt-2 text-sm text-gray-500"><?php _e('Esto se aplicará a todas las conversiones en su sitio web', 'ves-converter'); ?></p>
+                            <p class="mt-2 text-sm text-gray-500"><?php _e('El valor se aplicará a todas las conversiones en su catálogo.', 'ves-converter'); ?></p>
+                       
                         </div>
-                        
+                                                
                         <div class="mt-6">
                             <button type="button" id="submit" class="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 <?php _e('Guardar tasa del dia', 'ves-converter'); ?>
@@ -131,12 +151,42 @@ $current_page = $rates_data['current_page'];
                                 </svg>
                             </button>
                         </div>
+
+                        <p id="rate-update-info" class="mt-2 text-sm text-gray-500">
+                            <span id="rate-update-info-bcv" style="display:none;">
+                                <?php _e('Se actualiza automáticamente entre las 8:00 AM y las 10:00 AM.', 'ves-converter'); ?>
+                            </span>
+                            <span id="rate-update-info-parallel" style="display:none;">
+                                <?php _e('Se actualiza automáticamente entre las 8:45 AM y 10:00 AM - 12:45 PM y 2:00 PM.', 'ves-converter'); ?>
+                            </span>
+                            <span id="rate-update-info-average" style="display:none;">
+                                <?php _e('Se actualiza automáticamente al variar el dolar Paralelo y BCV.', 'ves-converter'); ?>
+                            </span>
+                            <span id="rate-update-info-custom" style="display:none;">
+                                <?php _e('Esta tasa NO cambia de forma automática.', 'ves-converter'); ?>
+                            </span>
+                        </p>
                     </form>
-                    
                     <script>
                     jQuery(document).ready(function($) {
-                        // Show/hide custom rate field based on select value
+                        // Mostrar el mensaje inicial según el valor del select
+                        function updateRateInfo() {
+                            var selectedType = $('#default_rate_type').val();
+                            // Ocultar todos los mensajes
+                            $('#rate-update-info-bcv, #rate-update-info-parallel, #rate-update-info-average, #rate-update-info-custom').hide();
+                            
+                            // Mostrar el mensaje correspondiente al tipo seleccionado
+                            $('#rate-update-info-' + selectedType).show();
+                        }
+                        
+                        // Configurar el mensaje correcto al cargar la página
+                        updateRateInfo();
+                        
+                        // Actualizar mensaje cuando el usuario cambie la selección
                         $('#default_rate_type').on('change', function() {
+                            updateRateInfo();
+                            
+                            // También mostrar/ocultar el campo de tasa personalizada
                             if ($(this).val() === 'custom') {
                                 $('#custom-rate-field').removeClass('hidden');
                             } else {
@@ -378,7 +428,7 @@ $current_page = $rates_data['current_page'];
                                             <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
-                                            <span><?php _e('Hora', 'ves-converter'); ?></span>
+                                            <span><?php _e('Guardado', 'ves-converter'); ?></span>
                                         </div>
                                     </th>
                                 </tr>

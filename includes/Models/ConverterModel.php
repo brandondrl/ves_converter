@@ -319,13 +319,14 @@ class ConverterModel {
     }
     
     if ($is_custom_selected) {
+        error_log('VES Converter: No se actualizará automáticamente porque hay una tasa personalizada seleccionada');
         return false; // No actualizar si hay una tasa custom seleccionada
     }
     
     // 3. Obtener tasas actuales de la API
     $api_rates = self::get_rates_from_api();
     if ($api_rates === null) {
-        error_log('VES Converter Cron: Failed to get rates from API');
+        error_log('VES Converter: Error al obtener tasas desde la API');
         return false;
     }
     
@@ -360,7 +361,9 @@ class ConverterModel {
         return self::store_rate_record($api_rates, $selected_type);
     }
     
-    return false; // No hay cambios
+    // No hay cambios en las tasas
+    error_log('VES Converter: No ha cambiado el dólar');
+    return false;
     }
 
     /**
@@ -383,50 +386,27 @@ class ConverterModel {
         $current_minute = intval(date('i', $current_timestamp));
         $current_time_minutes = ($current_hour * 60) + $current_minute;
         
-        // Definir franjas horarias (en minutos desde medianoche)
-        $morning_start = 8 * 60;           // 8:00 AM
-        $morning_end = 10 * 60;            // 10:00 AM
-        $morning_peak_start = 8 * 60 + 45; // 8:45 AM
-        $morning_peak_end = 9 * 60 + 15;   // 9:15 AM
+        // Definir las 6 horas específicas de ejecución (en minutos desde medianoche)
+        $execution_times = [
+            8 * 60 + 45,  // 8:45 AM
+            9 * 60 + 20,  // 9:20 AM
+            10 * 60,      // 10:00 AM
+            12 * 60 + 45, // 12:45 PM
+            13 * 60 + 20, // 1:20 PM
+            14 * 60,      // 2:00 PM
+        ];
         
-        $noon_start = 12 * 60 + 30;        // 12:30 PM
-        $noon_end = 14 * 60;               // 2:00 PM
-        $noon_peak_start = 12 * 60 + 45;   // 12:45 PM
-        $noon_peak_end = 13 * 60 + 15;     // 1:15 PM
-        
-        $evening_start = 15 * 60;          // 3:00 PM
-        $evening_end = 18 * 60;            // 6:00 PM
-        $evening_peak_start = 15 * 60 + 20;// 3:20 PM
-        $evening_peak_end = 16 * 60;       // 4:00 PM
-        
-        // Verificar si estamos en alguna franja
-        $in_morning = $current_time_minutes >= $morning_start && $current_time_minutes <= $morning_end;
-        $in_morning_peak = $current_time_minutes >= $morning_peak_start && $current_time_minutes <= $morning_peak_end;
-        
-        $in_noon = $current_time_minutes >= $noon_start && $current_time_minutes <= $noon_end;
-        $in_noon_peak = $current_time_minutes >= $noon_peak_start && $current_time_minutes <= $noon_peak_end;
-        
-        $in_evening = $current_time_minutes >= $evening_start && $current_time_minutes <= $evening_end;
-        $in_evening_peak = $current_time_minutes >= $evening_peak_start && $current_time_minutes <= $evening_peak_end;
-        
-        // Determinar si debemos ejecutar o no según la franja horaria actual
-        if ($in_morning_peak || $in_noon_peak || $in_evening_peak) {
-            // En horas pico, siempre ejecutar
-            error_log('VES Converter: Running update - peak time detected: ' . date('H:i', $current_timestamp));
-            return true;
-        } else if (($in_morning && !$in_morning_peak) || 
-                ($in_noon && !$in_noon_peak) || 
-                ($in_evening && !$in_evening_peak)) {
-            // En horas normales (no pico), usar probabilidad para reducir frecuencia
-            $random = rand(1, 3);
-            $should_run = ($random === 1); // ~33% de probabilidad
-            error_log('VES Converter: Normal time period detected: ' . date('H:i', $current_timestamp) . 
-                      ', Random value: ' . $random . ', Should run: ' . ($should_run ? 'Yes' : 'No'));
-            return $should_run;
+        // Verificar si estamos en uno de los momentos específicos de ejecución
+        // Permitir un margen de +/- 2 minutos para compensar retrasos del cron
+        foreach ($execution_times as $time) {
+            if (abs($current_time_minutes - $time) <= 2) {
+                error_log('VES Converter: Running update - scheduled time detected: ' . date('H:i', $current_timestamp));
+                return true;
+            }
         }
         
-        // Fuera de las franjas horarias definidas
-        error_log('VES Converter: Skipping update - outside operational hours: ' . date('H:i', $current_timestamp));
+        // No es una hora programada para ejecución
+        error_log('VES Converter: Skipping update - not a scheduled execution time: ' . date('H:i', $current_timestamp));
         return false;
     }
 

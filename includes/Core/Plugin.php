@@ -25,6 +25,9 @@ class Plugin {
         // Load Admin class
         require_once VES_CONVERTER_PLUGIN_DIR . 'includes/Admin/AdminPage.php';
         
+        // Load TestRunner utility
+        require_once VES_CONVERTER_PLUGIN_DIR . 'includes/Admin/TestRunner.php';
+        
         // Load API
         require_once VES_CONVERTER_PLUGIN_DIR . 'includes/API/APIEndpoint.php';
         
