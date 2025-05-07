@@ -303,67 +303,77 @@ class ConverterModel {
      * @return bool|int False si no hay cambios o error, ID del nuevo registro si se guardó
      */
     public static function check_and_update_rates() {
-    // 1. Obtener el último registro guardado
-    $latest_rates = self::get_latest_rates();
-    if (!$latest_rates) {
-        return false; // No hay registros previos
-    }
-    
-    // 2. Verificar si la tasa seleccionada es custom (no actualizar en este caso)
-    $is_custom_selected = false;
-    foreach ($latest_rates as $type => $data) {
-        if (isset($data['selected']) && $data['selected'] && $type === 'custom') {
-            $is_custom_selected = true;
-            break;
+        // 1. Obtener el último registro guardado
+        $latest_rates = self::get_latest_rates();
+        if (!$latest_rates) {
+            return false; // No hay registros previos
         }
-    }
-    
-    if ($is_custom_selected) {
-        error_log('VES Converter: No se actualizará automáticamente porque hay una tasa personalizada seleccionada');
-        return false; // No actualizar si hay una tasa custom seleccionada
-    }
-    
-    // 3. Obtener tasas actuales de la API
-    $api_rates = self::get_rates_from_api();
-    if ($api_rates === null) {
-        error_log('VES Converter: Error al obtener tasas desde la API');
-        return false;
-    }
-    
-    // 4. Comparar las tasas para ver si hay cambios
-    $has_changes = false;
-    $rate_types = ['bcv', 'parallel', 'average'];
-    
-    foreach ($rate_types as $type) {
-        if (isset($api_rates[$type]['value']) && isset($latest_rates[$type]['value'])) {
-            $api_value = (float)$api_rates[$type]['value'];
-            $db_value = (float)$latest_rates[$type]['value'];
-            
-            if (abs($api_value - $db_value) > 0.001) { // Tolerancia para comparación de flotantes
-                $has_changes = true;
-                break;
-            }
-        }
-    }
-    
-    // 5. Si hay cambios, guardar un nuevo registro
-    if ($has_changes) {
-        // Determinar cuál es la tasa seleccionada actual
-        $selected_type = 'bcv'; // Default
+        
+        // 2. Determinar cuál es la tasa seleccionada actual
+        $selected_type = null;
+        $is_custom_selected = false;
+        
         foreach ($latest_rates as $type => $data) {
             if (isset($data['selected']) && $data['selected']) {
                 $selected_type = $type;
+                if ($type === 'custom') {
+                    $is_custom_selected = true;
+                }
                 break;
             }
         }
         
-        // Guardar el nuevo registro manteniendo la selección actual
-        return self::store_rate_record($api_rates, $selected_type);
-    }
-    
-    // No hay cambios en las tasas
-    error_log('VES Converter: No ha cambiado el dólar');
-    return false;
+        // Si no se encontró una tasa seleccionada, no proceder
+        if ($selected_type === null) {
+            error_log('VES Converter: No se encontró una tasa seleccionada en el último registro');
+            return false;
+        }
+        
+        if ($is_custom_selected) {
+            error_log('VES Converter: No se actualizará automáticamente porque hay una tasa personalizada seleccionada');
+            return false;
+        }
+        
+        // 3. Obtener tasas actuales de la API
+        $api_rates = self::get_rates_from_api();
+        if ($api_rates === null) {
+            error_log('VES Converter: Error al obtener tasas desde la API');
+            return false;
+        }
+        
+        // 4. Comparar las tasas para ver si hay cambios
+        if (isset($api_rates[$selected_type]['value']) && isset($latest_rates[$selected_type]['value'])) {
+            $api_value = (float)$api_rates[$selected_type]['value'];
+            $db_value = (float)$latest_rates[$selected_type]['value'];
+            
+            // Calcular el porcentaje de cambio
+            $change_percentage = abs(($api_value - $db_value) / $db_value * 100);
+            
+            // Si el cambio es mayor al 0.1% (0.001 en decimal), considerar que hay un cambio significativo
+            if ($change_percentage > 0.1) {
+                error_log(sprintf(
+                    'VES Converter: Cambio significativo detectado en tasa %s - API: %.2f, DB: %.2f, Cambio: %.2f%%',
+                    $selected_type,
+                    $api_value,
+                    $db_value,
+                    $change_percentage
+                ));
+                
+                // Guardar el nuevo registro manteniendo la selección actual
+                return self::store_rate_record($api_rates, $selected_type);
+            } else {
+                error_log(sprintf(
+                    'VES Converter: No hay cambio significativo en la tasa %s - API: %.2f, DB: %.2f, Cambio: %.2f%%',
+                    $selected_type,
+                    $api_value,
+                    $db_value,
+                    $change_percentage
+                ));
+            }
+        }
+        
+        // No hay cambios en las tasas
+        return false;
     }
 
     /**
@@ -385,6 +395,20 @@ class ConverterModel {
         $current_hour = intval(date('G', $current_timestamp));
         $current_minute = intval(date('i', $current_timestamp));
         $current_time_minutes = ($current_hour * 60) + $current_minute;
+        
+        // Verificar si la tasa seleccionada es 'average' y es antes de las 9am
+        $latest_rates = self::get_latest_rates();
+        if ($latest_rates) {
+            foreach ($latest_rates as $type => $data) {
+                if (isset($data['selected']) && $data['selected'] && $type === 'average') {
+                    if ($current_hour < 9) {
+                        error_log('VES Converter: Skipping rate update - average rate selected and before 9am');
+                        return false;
+                    }
+                    break;
+                }
+            }
+        }
         
         // Definir las 6 horas específicas de ejecución (en minutos desde medianoche)
         $execution_times = [
