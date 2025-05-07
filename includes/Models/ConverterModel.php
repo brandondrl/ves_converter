@@ -386,6 +386,20 @@ class ConverterModel {
         $current_minute = intval(date('i', $current_timestamp));
         $current_time_minutes = ($current_hour * 60) + $current_minute;
         
+        // Verificar si la tasa seleccionada es 'average' y es antes de las 9am
+        $latest_rates = self::get_latest_rates();
+        if ($latest_rates) {
+            foreach ($latest_rates as $type => $data) {
+                if (isset($data['selected']) && $data['selected'] && $type === 'average') {
+                    if ($current_hour < 9) {
+                        error_log('VES Converter: Skipping rate update - average rate selected and before 9am');
+                        return false;
+                    }
+                    break;
+                }
+            }
+        }
+        
         // Definir las 6 horas específicas de ejecución (en minutos desde medianoche)
         $execution_times = [
             8 * 60 + 45,  // 8:45 AM
