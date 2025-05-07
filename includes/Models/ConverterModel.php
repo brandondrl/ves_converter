@@ -215,7 +215,12 @@ class ConverterModel {
             error_log('VES Converter: Failed to get initial rates during plugin activation');
             return false;
         }
-        
+
+        $any_record_exists = self::get_latest_rates();
+        if ($any_record_exists !== null) {
+            return true;
+        }
+
         // Por defecto usar BCV como tasa seleccionada
         return self::store_rate_record($api_rates, 'bcv');
     }
