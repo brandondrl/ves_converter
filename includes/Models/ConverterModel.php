@@ -354,8 +354,8 @@ class ConverterModel {
             // Calcular el porcentaje de cambio
             $change_percentage = abs(($api_value - $db_value) / $db_value * 100);
             
-            // Si el cambio es mayor al 0.1% (0.001 en decimal), considerar que hay un cambio significativo
-            if ($change_percentage > 0.1) {
+           // Si el cambio es mayor al 0.009% (0.00009 en decimal), considerar que hay un cambio significativo
+            if ($change_percentage > 0.000095) {
                 error_log(sprintf(
                     'VES Converter: Cambio significativo detectado en tasa %s - API: %.2f, DB: %.2f, Cambio: %.2f%%',
                     $selected_type,
