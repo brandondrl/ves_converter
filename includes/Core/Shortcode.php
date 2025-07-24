@@ -80,7 +80,8 @@ class Shortcode {
         $default_rates = [
             'usd' => 0,
             'average' => 0,
-            'euro' => 0
+            'euro' => 0,
+            'binance' => 0
         ];
         
         // Try to get rates from the database using the model
@@ -91,7 +92,7 @@ class Shortcode {
                 $processed_rates = [];
                 
                 // Extraer los valores de cada tipo de tasa
-                foreach (['usd', 'euro', 'average', 'custom'] as $rate_type) {
+                foreach (['usd', 'euro', 'average', 'binance', 'custom'] as $rate_type) {
                     if (isset($rates_data[$rate_type]) && isset($rates_data[$rate_type]['value'])) {
                         $processed_rates[$rate_type] = floatval($rates_data[$rate_type]['value']);
                     }
@@ -133,6 +134,7 @@ class Shortcode {
                 'usd' => 0,
                 'average' => 0,
                 'euro' => 0,
+                'binance' => 0,
                 'custom' => 0
             ],
             'selected' => 'usd'
@@ -147,7 +149,7 @@ class Shortcode {
                 $selected_type = 'usd'; // Valor por defecto
                 
                 // Extraer los valores de cada tipo de tasa
-                foreach (['usd', 'euro', 'average', 'custom'] as $rate_type) {
+                foreach (['usd', 'euro', 'average', 'binance', 'custom'] as $rate_type) {
                     if (isset($rates[$rate_type])) {
                         $processed_rates[$rate_type] = floatval($rates[$rate_type]['value']);
                         

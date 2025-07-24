@@ -19,6 +19,7 @@ $rate_display_names = [
     'usd' => __('usd', 'ves-converter'),
     'average' => __('Promedio', 'ves-converter'),
     'euro' => __('euro', 'ves-converter'),
+    'binance' => __('binance', 'ves-converter'),
     'custom' => __('Personalizada', 'ves-converter')
 ];
 $rate_display_name = isset($rate_display_names[$rate_name]) ? $rate_display_names[$rate_name] : $rate_name;

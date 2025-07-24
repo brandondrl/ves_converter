@@ -87,6 +87,11 @@
                         $type_label = __('euro', 'ves-converter');
                         $hover_color = 'hover:bg-red-50';
                         break;
+                    case 'binance':
+                        $badge_color = 'bg-red-100 text-red-800 border border-red-200';
+                        $type_label = __('binance', 'ves-converter');
+                        $hover_color = 'hover:bg-red-50';
+                        break;
                     case 'custom':
                         $badge_color = 'bg-gray-100 text-gray-800 border border-gray-200';
                         $type_label = __('Personalizada', 'ves-converter');

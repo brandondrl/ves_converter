@@ -115,6 +115,16 @@ $current_page = $rates_data['current_page'];
                                     }
                                     ?>
                                 </option>
+                                <option value="binance" <?php selected($active_rate_type, 'binance'); ?>>
+                                    <?php 
+                                    _e('Binance P2P', 'ves-converter');
+                                    if (!empty($rates) && isset($rates['binance']) && isset($rates['binance']['value'])) {
+                                        echo ' (' . number_format($rates['binance']['value'], 2) . ' Bs.)';
+                                    } else {
+                                        echo ' (Sin datos)';
+                                    }
+                                    ?>
+                                </option>
                                 <option value="custom" <?php selected($active_rate_type, 'custom'); ?>><?php _e('Tasa Personalizada', 'ves-converter'); ?></option>
                                     </select>
                             
@@ -161,6 +171,9 @@ $current_page = $rates_data['current_page'];
                             <span id="rate-update-info-average" style="display:none;">
                                 <?php _e('Se actualiza automáticamente al variar el usd bcv y el euro bcv.', 'ves-converter'); ?>
                             </span>
+                            <span id="rate-update-info-binance" style="display:none;">
+                                <?php _e('Se actualiza automáticamente', 'ves-converter'); ?>
+                            </span>
                             <span id="rate-update-info-custom" style="display:none;">
                                 <?php _e('Esta tasa NO cambia de forma automática.', 'ves-converter'); ?>
                             </span>
@@ -172,7 +185,7 @@ $current_page = $rates_data['current_page'];
                         function updateRateInfo() {
                             var selectedType = $('#default_rate_type').val();
                             // Ocultar todos los mensajes
-                            $('#rate-update-info-usd, #rate-update-info-euro, #rate-update-info-average, #rate-update-info-custom').hide();
+                            $('#rate-update-info-usd, #rate-update-info-euro, #rate-update-info-average, #rate-update-info-binance, #rate-update-info-custom').hide();
                             
                             // Mostrar el mensaje correspondiente al tipo seleccionado
                             $('#rate-update-info-' + selectedType).show();
@@ -257,6 +270,10 @@ $current_page = $rates_data['current_page'];
                                         $type_label = __('EURO BCV', 'ves-converter');
                                         $color_class = 'text-purple-700';
                                         break;
+                                    case 'binance':
+                                        $type_label = __('Binance P2P', 'ves-converter');
+                                        $color_class = 'text-purple-700';
+                                        break;
                                     case 'custom':
                                         $type_label = __('Tasa Personalizada', 'ves-converter');
                                         $color_class = 'text-amber-700';
@@ -270,11 +287,11 @@ $current_page = $rates_data['current_page'];
                                 echo ' <span class="mx-1">|</span> ';
                                 echo '<span class="text-gray-500">' . $selected_date . '</span>';
                             } else {
-                                _e('Actualmente usando:', 'ves-converter'); ?> <span class="font-medium text-blue-700"><?php _e('usd (Banco Central)', 'ves-converter'); ?></span>
+                                _e('Actualmente usando:', 'ves-converter'); ?> <span class="font-medium text-blue-700"><?php _e('USD BCV', 'ves-converter'); ?></span>
                             <?php
                             }
                         } else {
-                            _e('Actualmente usando:', 'ves-converter'); ?> <span class="font-medium text-blue-700"><?php _e('usd (Banco Central)', 'ves-converter'); ?></span>
+                            _e('Actualmente usando:', 'ves-converter'); ?> <span class="font-medium text-blue-700"><?php _e('USD BCV', 'ves-converter'); ?></span>
                         <?php
                         }
                         ?>
@@ -361,6 +378,25 @@ $current_page = $rates_data['current_page'];
                                 <?php 
                                 if (!empty($rates) && isset($rates['euro']) && isset($rates['euro']['catch_date'])) {
                                     echo esc_html($rates['euro']['catch_date']); 
+                                }
+                                ?>
+                            </p>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                            <h4 class="text-sm font-medium text-purple-800 mb-1"><?php _e('Tasa Binance P2P', 'ves-converter'); ?></h4>
+                            <p class="text-2xl font-bold text-purple-700">
+                                <?php 
+                                if (!empty($rates) && isset($rates['binance']) && isset($rates['binance']['value'])) {
+                                    echo number_format($rates['binance']['value'], 2);
+                                } else {
+                                    echo 'N/A';
+                                }
+                                ?> <span class="text-sm font-normal">Bs.</span>
+                            </p>
+                            <p class="text-xs text-purple-600 mt-1">
+                                <?php 
+                                if (!empty($rates) && isset($rates['binance']) && isset($rates['binance']['catch_date'])) {
+                                    echo esc_html($rates['binance']['catch_date']); 
                                 }
                                 ?>
                             </p>
@@ -481,6 +517,11 @@ $current_page = $rates_data['current_page'];
                                         case 'euro':
                                             $badge_color = 'bg-red-100 text-red-800 border border-red-200';
                                             $type_label = __('EURO BCV', 'ves-converter');
+                                            $hover_color = 'hover:bg-red-50';
+                                            break;
+                                        case 'binance':
+                                            $badge_color = 'bg-red-100 text-red-800 border border-red-200';
+                                            $type_label = __('Binance P2P', 'ves-converter');
                                             $hover_color = 'hover:bg-red-50';
                                             break;
                                         case 'custom':

@@ -141,7 +141,7 @@ class ConverterModel {
      * Guarda un registro de tasas en la base de datos
      * 
      * @param array $rates Datos de tasas a guardar
-     * @param string $selected_type Tipo de tasa seleccionada (usd, average, euro, custom)
+     * @param string $selected_type Tipo de tasa seleccionada (usd, average, euro, binance, custom)
      * @param float $custom_rate Valor personalizado si el tipo es 'custom'
      * @return int|false ID del registro insertado o false si hay error
      */
@@ -174,6 +174,11 @@ class ConverterModel {
                 'value' => isset($rates['average']['value']) ? $rates['average']['value'] : 0,
                 'catch_date' => isset($rates['average']['catch_date']) ? $rates['average']['catch_date'] : $formatted_date,
                 'selected' => ($selected_type === 'average')
+            ),
+            'binance' => array(
+                'value' => isset($rates['binance']['value']) ? $rates['binance']['value'] : 0,
+                'catch_date' => isset($rates['binance']['catch_date']) ? $rates['binance']['catch_date'] : $formatted_date,
+                'selected' => ($selected_type === 'binance')
             ),
             'custom' => array(
                 'value' => ($selected_type === 'custom') ? $custom_rate : 0,
