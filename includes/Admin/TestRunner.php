@@ -116,7 +116,7 @@ class TestRunner {
             // Compare with latest rates to see if there are changes
             if ($latest_rates) {
                 $has_changes = false;
-                $rate_types = ['bcv', 'parallel', 'average'];
+                $rate_types = ['usd', 'euro', 'average', 'binance'];
                 
                 foreach ($rate_types as $type) {
                     if (isset($api_rates[$type]['value']) && isset($latest_rates[$type]['value'])) {

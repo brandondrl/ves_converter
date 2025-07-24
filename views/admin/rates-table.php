@@ -72,9 +72,9 @@
                 $hover_color = '';
 
                 switch ($selected_type) {
-                    case 'bcv':
+                    case 'usd':
                         $badge_color = 'bg-blue-500 text-white border border-blue-600';
-                        $type_label = 'BCV';
+                        $type_label = 'usd';
                         $hover_color = 'hover:bg-blue-50';
                         break;
                     case 'average':
@@ -82,9 +82,14 @@
                         $type_label = __('Promedio', 'ves-converter');
                         $hover_color = 'hover:bg-green-50';
                         break;
-                    case 'parallel':
+                    case 'euro':
                         $badge_color = 'bg-red-100 text-red-800 border border-red-200';
-                        $type_label = __('Paralelo', 'ves-converter');
+                        $type_label = __('euro', 'ves-converter');
+                        $hover_color = 'hover:bg-red-50';
+                        break;
+                    case 'binance':
+                        $badge_color = 'bg-red-100 text-red-800 border border-red-200';
+                        $type_label = __('binance', 'ves-converter');
                         $hover_color = 'hover:bg-red-50';
                         break;
                     case 'custom':
