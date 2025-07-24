@@ -75,7 +75,6 @@ $current_page = $rates_data['current_page'];
                             // Obtener la tasa seleccionada actualmente en la base de datos
                             $current_rates_info = ConverterModel::get_latest_rates();
                             $active_rate_type = 'usd'; // Valor por defecto
-                            
                             if (!empty($current_rates_info)) {
                                 foreach ($current_rates_info as $type => $data) {
                                     if (isset($data['selected']) && $data['selected']) {
@@ -88,7 +87,7 @@ $current_page = $rates_data['current_page'];
                             <select name="default_rate_type" id="default_rate_type" class="block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                                 <option value="usd" <?php selected($active_rate_type, 'usd'); ?>>
                                     <?php 
-                                    _e('usd (Banco Central)', 'ves-converter');
+                                    _e('USD (BCV)', 'ves-converter');
                                     if (!empty($rates) && isset($rates['usd']) && isset($rates['usd']['value'])) {
                                         echo ' (' . number_format($rates['usd']['value'], 2) . ' Bs.)';
                                     } else {
@@ -98,7 +97,7 @@ $current_page = $rates_data['current_page'];
                                 </option>
                                 <option value="average" <?php selected($active_rate_type, 'average'); ?>>
                                     <?php 
-                                    _e('Tasa Promedio', 'ves-converter');
+                                    _e('Promedio (usd/euro)', 'ves-converter');
                                     if (!empty($rates) && isset($rates['average']) && isset($rates['average']['value'])) {
                                         echo ' (' . number_format($rates['average']['value'], 2) . ' Bs.)';
                                     } else {
@@ -108,7 +107,7 @@ $current_page = $rates_data['current_page'];
                                 </option>
                                 <option value="euro" <?php selected($active_rate_type, 'euro'); ?>>
                                     <?php 
-                                    _e('Dolar Paralelo', 'ves-converter');
+                                    _e('EURO BCV', 'ves-converter');
                                     if (!empty($rates) && isset($rates['euro']) && isset($rates['euro']['value'])) {
                                         echo ' (' . number_format($rates['euro']['value'], 2) . ' Bs.)';
                                     } else {
@@ -160,7 +159,7 @@ $current_page = $rates_data['current_page'];
                                 <?php _e('Se actualiza automáticamente entre las 8:45 AM y 10:00 AM - 12:45 PM y 2:00 PM.', 'ves-converter'); ?>
                             </span>
                             <span id="rate-update-info-average" style="display:none;">
-                                <?php _e('Se actualiza automáticamente al variar el dolar Paralelo y usd.', 'ves-converter'); ?>
+                                <?php _e('Se actualiza automáticamente al variar el usd bcv y el euro bcv.', 'ves-converter'); ?>
                             </span>
                             <span id="rate-update-info-custom" style="display:none;">
                                 <?php _e('Esta tasa NO cambia de forma automática.', 'ves-converter'); ?>
@@ -247,15 +246,15 @@ $current_page = $rates_data['current_page'];
                                 $type_label = '';
                                 switch ($selected_type) {
                                     case 'usd':
-                                        $type_label = __('usd (Banco Central)', 'ves-converter');
+                                        $type_label = __('USD BCV', 'ves-converter');
                                         $color_class = 'text-blue-700';
                                         break;
                                     case 'average':
-                                        $type_label = __('Tasa Promedio', 'ves-converter');
+                                        $type_label = __('Promedio (usd/euro)', 'ves-converter');
                                         $color_class = 'text-green-700';
                                         break;
                                     case 'euro':
-                                        $type_label = __('Dolar Paralelo', 'ves-converter');
+                                        $type_label = __('EURO BCV', 'ves-converter');
                                         $color_class = 'text-purple-700';
                                         break;
                                     case 'custom':
@@ -308,7 +307,7 @@ $current_page = $rates_data['current_page'];
                     
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                            <h4 class="text-sm font-medium text-blue-800 mb-1"><?php _e('Tasa usd', 'ves-converter'); ?></h4>
+                            <h4 class="text-sm font-medium text-blue-800 mb-1"><?php _e('Tasa USD BCV', 'ves-converter'); ?></h4>
                             <p class="text-2xl font-bold text-blue-700">
                                 <?php 
                                 if (!empty($rates) && isset($rates['usd']) && isset($rates['usd']['value'])) {
@@ -328,7 +327,7 @@ $current_page = $rates_data['current_page'];
                         </div>
                         
                         <div class="bg-green-50 p-4 rounded-lg border border-green-100">
-                            <h4 class="text-sm font-medium text-green-800 mb-1"><?php _e('Tasa Promedio', 'ves-converter'); ?></h4>
+                            <h4 class="text-sm font-medium text-green-800 mb-1"><?php _e('Tasa Promedio (usd/euro)', 'ves-converter'); ?></h4>
                             <p class="text-2xl font-bold text-green-700">
                                 <?php 
                                 if (!empty($rates) && isset($rates['average']) && isset($rates['average']['value'])) {
@@ -348,7 +347,7 @@ $current_page = $rates_data['current_page'];
                         </div>
                         
                         <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                            <h4 class="text-sm font-medium text-purple-800 mb-1"><?php _e('Tasa del Dolar Paralelo', 'ves-converter'); ?></h4>
+                            <h4 class="text-sm font-medium text-purple-800 mb-1"><?php _e('Tasa EURO BCV', 'ves-converter'); ?></h4>
                             <p class="text-2xl font-bold text-purple-700">
                                 <?php 
                                 if (!empty($rates) && isset($rates['euro']) && isset($rates['euro']['value'])) {
@@ -471,17 +470,17 @@ $current_page = $rates_data['current_page'];
                                     switch ($selected_type) {
                                         case 'usd':
                                             $badge_color = 'bg-blue-500 text-white border border-blue-600';
-                                            $type_label = 'usd';
+                                            $type_label = 'USD BCV';
                                             $hover_color = 'hover:bg-blue-50';
                                             break;
                                         case 'average':
                                             $badge_color = 'bg-green-100 text-green-800 border border-green-200';
-                                            $type_label = __('Promedio', 'ves-converter');
+                                            $type_label = __('Promedio (usd/euro)', 'ves-converter');
                                             $hover_color = 'hover:bg-green-50';
                                             break;
                                         case 'euro':
                                             $badge_color = 'bg-red-100 text-red-800 border border-red-200';
-                                            $type_label = __('Paralelo', 'ves-converter');
+                                            $type_label = __('EURO BCV', 'ves-converter');
                                             $hover_color = 'hover:bg-red-50';
                                             break;
                                         case 'custom':

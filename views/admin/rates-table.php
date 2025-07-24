@@ -84,7 +84,7 @@
                         break;
                     case 'euro':
                         $badge_color = 'bg-red-100 text-red-800 border border-red-200';
-                        $type_label = __('Paralelo', 'ves-converter');
+                        $type_label = __('euro', 'ves-converter');
                         $hover_color = 'hover:bg-red-50';
                         break;
                     case 'custom':

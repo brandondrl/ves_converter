@@ -18,7 +18,7 @@ $rate_value = isset($rates_data['rates'][$rates_data['selected']]) ? number_form
 $rate_display_names = [
     'usd' => __('usd', 'ves-converter'),
     'average' => __('Promedio', 'ves-converter'),
-    'euro' => __('Paralelo', 'ves-converter'),
+    'euro' => __('euro', 'ves-converter'),
     'custom' => __('Personalizada', 'ves-converter')
 ];
 $rate_display_name = isset($rate_display_names[$rate_name]) ? $rate_display_names[$rate_name] : $rate_name;

@@ -116,7 +116,7 @@
 //    function updateRateDisplay() {
 //        $('#rate-type option[value="usd"]').text('usd (' + currentRates.usd.toFixed(2) + ' Bs.)');
 //        $('#rate-type option[value="average"]').text('Promedio (' + currentRates.average.toFixed(2) + ' Bs.)');
-//        $('#rate-type option[value="euro"]').text('Paralelo (' + currentRates.euro.toFixed(2) + ' Bs.)');
+//        $('#rate-type option[value="euro"]').text('euro (' + currentRates.euro.toFixed(2) + ' Bs.)');
 //    }
 //    
 //    /**
@@ -221,7 +221,7 @@
 //        const types = {
 //            usd: 'usd',
 //            average: 'Promedio',
-//            euro: 'Paralelo',
+//            euro: 'euro',
 //            custom: 'Personalizada'
 //        };
 //        
