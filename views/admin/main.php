@@ -106,11 +106,11 @@ $current_page = $rates_data['current_page'];
                                     }
                                     ?>
                                 </option>
-                                <option value="parallel" <?php selected($active_rate_type, 'parallel'); ?>>
+                                <option value="euro" <?php selected($active_rate_type, 'euro'); ?>>
                                     <?php 
                                     _e('Dolar Paralelo', 'ves-converter');
-                                    if (!empty($rates) && isset($rates['parallel']) && isset($rates['parallel']['value'])) {
-                                        echo ' (' . number_format($rates['parallel']['value'], 2) . ' Bs.)';
+                                    if (!empty($rates) && isset($rates['euro']) && isset($rates['euro']['value'])) {
+                                        echo ' (' . number_format($rates['euro']['value'], 2) . ' Bs.)';
                                     } else {
                                         echo ' (Sin datos)';
                                     }
@@ -156,7 +156,7 @@ $current_page = $rates_data['current_page'];
                             <span id="rate-update-info-bcv" style="display:none;">
                                 <?php _e('Se actualiza automáticamente entre las 8:00 AM y las 10:00 AM.', 'ves-converter'); ?>
                             </span>
-                            <span id="rate-update-info-parallel" style="display:none;">
+                            <span id="rate-update-info-euro" style="display:none;">
                                 <?php _e('Se actualiza automáticamente entre las 8:45 AM y 10:00 AM - 12:45 PM y 2:00 PM.', 'ves-converter'); ?>
                             </span>
                             <span id="rate-update-info-average" style="display:none;">
@@ -173,7 +173,7 @@ $current_page = $rates_data['current_page'];
                         function updateRateInfo() {
                             var selectedType = $('#default_rate_type').val();
                             // Ocultar todos los mensajes
-                            $('#rate-update-info-bcv, #rate-update-info-parallel, #rate-update-info-average, #rate-update-info-custom').hide();
+                            $('#rate-update-info-bcv, #rate-update-info-euro, #rate-update-info-average, #rate-update-info-custom').hide();
                             
                             // Mostrar el mensaje correspondiente al tipo seleccionado
                             $('#rate-update-info-' + selectedType).show();
@@ -254,7 +254,7 @@ $current_page = $rates_data['current_page'];
                                         $type_label = __('Tasa Promedio', 'ves-converter');
                                         $color_class = 'text-green-700';
                                         break;
-                                    case 'parallel':
+                                    case 'euro':
                                         $type_label = __('Dolar Paralelo', 'ves-converter');
                                         $color_class = 'text-purple-700';
                                         break;
@@ -351,8 +351,8 @@ $current_page = $rates_data['current_page'];
                             <h4 class="text-sm font-medium text-purple-800 mb-1"><?php _e('Tasa del Dolar Paralelo', 'ves-converter'); ?></h4>
                             <p class="text-2xl font-bold text-purple-700">
                                 <?php 
-                                if (!empty($rates) && isset($rates['parallel']) && isset($rates['parallel']['value'])) {
-                                    echo number_format($rates['parallel']['value'], 2);
+                                if (!empty($rates) && isset($rates['euro']) && isset($rates['euro']['value'])) {
+                                    echo number_format($rates['euro']['value'], 2);
                                 } else {
                                     echo 'N/A';
                                 }
@@ -360,8 +360,8 @@ $current_page = $rates_data['current_page'];
                             </p>
                             <p class="text-xs text-purple-600 mt-1">
                                 <?php 
-                                if (!empty($rates) && isset($rates['parallel']) && isset($rates['parallel']['catch_date'])) {
-                                    echo esc_html($rates['parallel']['catch_date']); 
+                                if (!empty($rates) && isset($rates['euro']) && isset($rates['euro']['catch_date'])) {
+                                    echo esc_html($rates['euro']['catch_date']); 
                                 }
                                 ?>
                             </p>
@@ -479,7 +479,7 @@ $current_page = $rates_data['current_page'];
                                             $type_label = __('Promedio', 'ves-converter');
                                             $hover_color = 'hover:bg-green-50';
                                             break;
-                                        case 'parallel':
+                                        case 'euro':
                                             $badge_color = 'bg-red-100 text-red-800 border border-red-200';
                                             $type_label = __('Paralelo', 'ves-converter');
                                             $hover_color = 'hover:bg-red-50';

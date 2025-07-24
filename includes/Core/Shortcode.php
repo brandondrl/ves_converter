@@ -26,7 +26,7 @@ class Shortcode {
     public function render_converter($atts) {
         // Extract attributes
         $atts = shortcode_atts([
-            'default_rate' => 'bcv', // Default rate type: bcv, average, parallel
+            'default_rate' => 'bcv', // Default rate type: bcv, average, euro
         ], $atts, 'ves_converter');
         
         // Get latest rates
@@ -80,7 +80,7 @@ class Shortcode {
         $default_rates = [
             'bcv' => 0,
             'average' => 0,
-            'parallel' => 0
+            'euro' => 0
         ];
         
         // Try to get rates from the database using the model
@@ -91,7 +91,7 @@ class Shortcode {
                 $processed_rates = [];
                 
                 // Extraer los valores de cada tipo de tasa
-                foreach (['bcv', 'parallel', 'average', 'custom'] as $rate_type) {
+                foreach (['bcv', 'euro', 'average', 'custom'] as $rate_type) {
                     if (isset($rates_data[$rate_type]) && isset($rates_data[$rate_type]['value'])) {
                         $processed_rates[$rate_type] = floatval($rates_data[$rate_type]['value']);
                     }
@@ -132,7 +132,7 @@ class Shortcode {
             'rates' => [
                 'bcv' => 0,
                 'average' => 0,
-                'parallel' => 0,
+                'euro' => 0,
                 'custom' => 0
             ],
             'selected' => 'bcv'
@@ -147,7 +147,7 @@ class Shortcode {
                 $selected_type = 'bcv'; // Valor por defecto
                 
                 // Extraer los valores de cada tipo de tasa
-                foreach (['bcv', 'parallel', 'average', 'custom'] as $rate_type) {
+                foreach (['bcv', 'euro', 'average', 'custom'] as $rate_type) {
                     if (isset($rates[$rate_type])) {
                         $processed_rates[$rate_type] = floatval($rates[$rate_type]['value']);
                         

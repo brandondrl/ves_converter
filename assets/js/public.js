@@ -8,7 +8,7 @@
 //    let currentRates = {
 //        bcv: 0,
 //        average: 0,
-//        parallel: 0
+//        euro: 0
 //    };
 //    let currentRateType = 'bcv';
 //    let currentRateValue = 0;
@@ -94,7 +94,7 @@
 //                    currentRates = {
 //                        bcv: parseFloat(response.rates.bcv) || 0,
 //                        average: parseFloat(response.rates.average) || 0,
-//                        parallel: parseFloat(response.rates.parallel) || 0
+//                        euro: parseFloat(response.rates.euro) || 0
 //                    };
 //                    
 //                    // Actualizar visualización de tasas en opciones de selección
@@ -116,7 +116,7 @@
 //    function updateRateDisplay() {
 //        $('#rate-type option[value="bcv"]').text('BCV (' + currentRates.bcv.toFixed(2) + ' Bs.)');
 //        $('#rate-type option[value="average"]').text('Promedio (' + currentRates.average.toFixed(2) + ' Bs.)');
-//        $('#rate-type option[value="parallel"]').text('Paralelo (' + currentRates.parallel.toFixed(2) + ' Bs.)');
+//        $('#rate-type option[value="euro"]').text('Paralelo (' + currentRates.euro.toFixed(2) + ' Bs.)');
 //    }
 //    
 //    /**
@@ -221,7 +221,7 @@
 //        const types = {
 //            bcv: 'BCV',
 //            average: 'Promedio',
-//            parallel: 'Paralelo',
+//            euro: 'Paralelo',
 //            custom: 'Personalizada'
 //        };
 //        

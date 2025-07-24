@@ -141,7 +141,7 @@ class ConverterModel {
      * Guarda un registro de tasas en la base de datos
      * 
      * @param array $rates Datos de tasas a guardar
-     * @param string $selected_type Tipo de tasa seleccionada (bcv, average, parallel, custom)
+     * @param string $selected_type Tipo de tasa seleccionada (bcv, average, euro, custom)
      * @param float $custom_rate Valor personalizado si el tipo es 'custom'
      * @return int|false ID del registro insertado o false si hay error
      */
@@ -165,10 +165,10 @@ class ConverterModel {
                 'catch_date' => isset($rates['bcv']['catch_date']) ? $rates['bcv']['catch_date'] : $formatted_date,
                 'selected' => ($selected_type === 'bcv')
             ),
-            'parallel' => array(
-                'value' => isset($rates['parallel']['value']) ? $rates['parallel']['value'] : 0,
-                'catch_date' => isset($rates['parallel']['catch_date']) ? $rates['parallel']['catch_date'] : $formatted_date,
-                'selected' => ($selected_type === 'parallel')
+            'euro' => array(
+                'value' => isset($rates['euro']['value']) ? $rates['euro']['value'] : 0,
+                'catch_date' => isset($rates['euro']['catch_date']) ? $rates['euro']['catch_date'] : $formatted_date,
+                'selected' => ($selected_type === 'euro')
             ),
             'average' => array(
                 'value' => isset($rates['average']['value']) ? $rates['average']['value'] : 0,

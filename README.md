@@ -4,12 +4,12 @@ WordPress plugin for currency conversion using Sovereign Bolivar (VES) to Dollar
 
 ## Description
 
-VES Converter is a plugin that allows users to convert between Sovereign Bolivars (VES) and US Dollars (USD) using exchange rates provided by the VES Change Getter plugin. The plugin offers multiple types of exchange rates (BCV, average, and parallel) and allows users to save their conversion history.
+VES Converter is a plugin that allows users to convert between Sovereign Bolivars (VES) and US Dollars (USD) using exchange rates provided by the VES Change Getter plugin. The plugin offers multiple types of exchange rates (BCV, average, and euro) and allows users to save their conversion history.
 
 ## Features
 
 - Integration with VES Change Getter to obtain updated exchange rates
-- Multiple exchange rate types (BCV, average, parallel)
+- Multiple exchange rate types (BCV, average, euro)
 - Bidirectional conversion (USD to VES and VES to USD)
 - Rate history tracking for registered users
 - Intuitive and responsive user interface
@@ -40,11 +40,11 @@ You can use the `[ves_converter]` shortcode to display the converter on any page
 
 The shortcode accepts the following optional attributes:
 
-- `default_rate`: Default rate type (bcv, average, parallel). Default: bcv
+- `default_rate`: Default rate type (bcv, average, euro). Default: bcv
 
 Example:
 ```
-[ves_converter default_rate="parallel"]
+[ves_converter default_rate="euro"]
 ```
 
 ### Admin Dashboard
@@ -65,7 +65,7 @@ The plugin offers the following endpoints:
    POST /wp-json/ves-converter/v1/save-conversion
    ```
    Parameters:
-   - rate_type: Rate type (bcv, average, parallel)
+   - rate_type: Rate type (bcv, average, euro)
    - rate_value: Rate value
 
 2. **Get user rate history**

@@ -365,7 +365,7 @@
                 $switch.css('background-color', '#0066cc');
                 rate_info.css('background-color', 'rgba(0, 102, 204, 0.8)');
             } else {
-                // Naranjo para otros tipos de tasa (average, parallel, custom)
+                // Naranjo para otros tipos de tasa (average, euro, custom)
                 $switch.css('background-color', '#FF8C00');
                 rate_info.css('background-color', 'rgba(255, 140, 0, 0.8)');
             }
