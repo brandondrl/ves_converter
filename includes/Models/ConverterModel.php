@@ -141,11 +141,11 @@ class ConverterModel {
      * Guarda un registro de tasas en la base de datos
      * 
      * @param array $rates Datos de tasas a guardar
-     * @param string $selected_type Tipo de tasa seleccionada (bcv, average, euro, custom)
+     * @param string $selected_type Tipo de tasa seleccionada (usd, average, euro, custom)
      * @param float $custom_rate Valor personalizado si el tipo es 'custom'
      * @return int|false ID del registro insertado o false si hay error
      */
-    public static function store_rate_record($rates, $selected_type = 'bcv', $custom_rate = 0) {
+    public static function store_rate_record($rates, $selected_type = 'usd', $custom_rate = 0) {
         global $wpdb;
         $table_name = self::get_table_name();
         $current_time = current_time('mysql');
@@ -160,10 +160,10 @@ class ConverterModel {
         
         // Preparar datos de tasas con la selección aplicada
         $processed_rates = array(
-            'bcv' => array(
-                'value' => isset($rates['bcv']['value']) ? $rates['bcv']['value'] : 0,
-                'catch_date' => isset($rates['bcv']['catch_date']) ? $rates['bcv']['catch_date'] : $formatted_date,
-                'selected' => ($selected_type === 'bcv')
+            'usd' => array(
+                'value' => isset($rates['usd']['value']) ? $rates['usd']['value'] : 0,
+                'catch_date' => isset($rates['usd']['catch_date']) ? $rates['usd']['catch_date'] : $formatted_date,
+                'selected' => ($selected_type === 'usd')
             ),
             'euro' => array(
                 'value' => isset($rates['euro']['value']) ? $rates['euro']['value'] : 0,
@@ -222,8 +222,8 @@ class ConverterModel {
             return true;
         }
 
-        // Por defecto usar BCV como tasa seleccionada
-        return self::store_rate_record($api_rates, 'bcv');
+        // Por defecto usar usd como tasa seleccionada
+        return self::store_rate_record($api_rates, 'usd');
     }
 
     public static function save_rate() {

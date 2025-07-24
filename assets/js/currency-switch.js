@@ -10,7 +10,7 @@
     let currentCurrency = 'usd'; // Moneda actual (usd o bs)
     let originalPrices = {}; // Almacena los precios originales
     let rateValue = 0; // Valor de la tasa seleccionada
-    let rateType = 'bcv'; // Tipo de tasa seleccionada
+    let rateType = 'usd'; // Tipo de tasa seleccionada
     let processedElements = []; // Elementos ya procesados
     let isProcessing = false; // Bandera para evitar procesamiento simultáneo
     
@@ -22,7 +22,7 @@
             rateValue = parseFloat(vesCurrencyData.rate_value) || 0;
             
             // Obtener el tipo de tasa seleccionada
-            rateType = vesCurrencyData.selected_rate || 'bcv';
+            rateType = vesCurrencyData.selected_rate || 'usd';
             
             // Configurar moneda inicial
             if (vesCurrencyData.initial_currency) {
@@ -360,8 +360,8 @@
             $switch.addClass('switched');
             
             // Colores según tipo de tasa
-            if (rateType === 'bcv') {
-                // Azul para BCV
+            if (rateType === 'usd') {
+                // Azul para usd
                 $switch.css('background-color', '#0066cc');
                 rate_info.css('background-color', 'rgba(0, 102, 204, 0.8)');
             } else {

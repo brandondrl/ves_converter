@@ -72,9 +72,9 @@
                 $hover_color = '';
 
                 switch ($selected_type) {
-                    case 'bcv':
+                    case 'usd':
                         $badge_color = 'bg-blue-500 text-white border border-blue-600';
-                        $type_label = 'BCV';
+                        $type_label = 'usd';
                         $hover_color = 'hover:bg-blue-50';
                         break;
                     case 'average':

@@ -11,12 +11,12 @@ if (!defined('ABSPATH')) {
 }
 
 // Formatear el valor de la tasa para mostrarla
-$rate_name = isset($rates_data['selected']) ? esc_html($rates_data['selected']) : 'bcv';
+$rate_name = isset($rates_data['selected']) ? esc_html($rates_data['selected']) : 'usd';
 $rate_value = isset($rates_data['rates'][$rates_data['selected']]) ? number_format($rates_data['rates'][$rates_data['selected']], 2) : '0.00';
 
 // Nombres más amigables para las tasas
 $rate_display_names = [
-    'bcv' => __('BCV', 'ves-converter'),
+    'usd' => __('usd', 'ves-converter'),
     'average' => __('Promedio', 'ves-converter'),
     'euro' => __('Paralelo', 'ves-converter'),
     'custom' => __('Personalizada', 'ves-converter')

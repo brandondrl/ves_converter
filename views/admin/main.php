@@ -74,7 +74,7 @@ $current_page = $rates_data['current_page'];
                             <?php
                             // Obtener la tasa seleccionada actualmente en la base de datos
                             $current_rates_info = ConverterModel::get_latest_rates();
-                            $active_rate_type = 'bcv'; // Valor por defecto
+                            $active_rate_type = 'usd'; // Valor por defecto
                             
                             if (!empty($current_rates_info)) {
                                 foreach ($current_rates_info as $type => $data) {
@@ -86,11 +86,11 @@ $current_page = $rates_data['current_page'];
                             }
                             ?>
                             <select name="default_rate_type" id="default_rate_type" class="block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                <option value="bcv" <?php selected($active_rate_type, 'bcv'); ?>>
+                                <option value="usd" <?php selected($active_rate_type, 'usd'); ?>>
                                     <?php 
-                                    _e('BCV (Banco Central)', 'ves-converter');
-                                    if (!empty($rates) && isset($rates['bcv']) && isset($rates['bcv']['value'])) {
-                                        echo ' (' . number_format($rates['bcv']['value'], 2) . ' Bs.)';
+                                    _e('usd (Banco Central)', 'ves-converter');
+                                    if (!empty($rates) && isset($rates['usd']) && isset($rates['usd']['value'])) {
+                                        echo ' (' . number_format($rates['usd']['value'], 2) . ' Bs.)';
                                     } else {
                                         echo ' (Sin datos)';
                                     }
@@ -153,14 +153,14 @@ $current_page = $rates_data['current_page'];
                         </div>
 
                         <p id="rate-update-info" class="mt-2 text-sm text-gray-500">
-                            <span id="rate-update-info-bcv" style="display:none;">
+                            <span id="rate-update-info-usd" style="display:none;">
                                 <?php _e('Se actualiza automáticamente entre las 8:00 AM y las 10:00 AM.', 'ves-converter'); ?>
                             </span>
                             <span id="rate-update-info-euro" style="display:none;">
                                 <?php _e('Se actualiza automáticamente entre las 8:45 AM y 10:00 AM - 12:45 PM y 2:00 PM.', 'ves-converter'); ?>
                             </span>
                             <span id="rate-update-info-average" style="display:none;">
-                                <?php _e('Se actualiza automáticamente al variar el dolar Paralelo y BCV.', 'ves-converter'); ?>
+                                <?php _e('Se actualiza automáticamente al variar el dolar Paralelo y usd.', 'ves-converter'); ?>
                             </span>
                             <span id="rate-update-info-custom" style="display:none;">
                                 <?php _e('Esta tasa NO cambia de forma automática.', 'ves-converter'); ?>
@@ -173,7 +173,7 @@ $current_page = $rates_data['current_page'];
                         function updateRateInfo() {
                             var selectedType = $('#default_rate_type').val();
                             // Ocultar todos los mensajes
-                            $('#rate-update-info-bcv, #rate-update-info-euro, #rate-update-info-average, #rate-update-info-custom').hide();
+                            $('#rate-update-info-usd, #rate-update-info-euro, #rate-update-info-average, #rate-update-info-custom').hide();
                             
                             // Mostrar el mensaje correspondiente al tipo seleccionado
                             $('#rate-update-info-' + selectedType).show();
@@ -246,8 +246,8 @@ $current_page = $rates_data['current_page'];
                             if (!empty($selected_type)) {
                                 $type_label = '';
                                 switch ($selected_type) {
-                                    case 'bcv':
-                                        $type_label = __('BCV (Banco Central)', 'ves-converter');
+                                    case 'usd':
+                                        $type_label = __('usd (Banco Central)', 'ves-converter');
                                         $color_class = 'text-blue-700';
                                         break;
                                     case 'average':
@@ -271,11 +271,11 @@ $current_page = $rates_data['current_page'];
                                 echo ' <span class="mx-1">|</span> ';
                                 echo '<span class="text-gray-500">' . $selected_date . '</span>';
                             } else {
-                                _e('Actualmente usando:', 'ves-converter'); ?> <span class="font-medium text-blue-700"><?php _e('BCV (Banco Central)', 'ves-converter'); ?></span>
+                                _e('Actualmente usando:', 'ves-converter'); ?> <span class="font-medium text-blue-700"><?php _e('usd (Banco Central)', 'ves-converter'); ?></span>
                             <?php
                             }
                         } else {
-                            _e('Actualmente usando:', 'ves-converter'); ?> <span class="font-medium text-blue-700"><?php _e('BCV (Banco Central)', 'ves-converter'); ?></span>
+                            _e('Actualmente usando:', 'ves-converter'); ?> <span class="font-medium text-blue-700"><?php _e('usd (Banco Central)', 'ves-converter'); ?></span>
                         <?php
                         }
                         ?>
@@ -308,11 +308,11 @@ $current_page = $rates_data['current_page'];
                     
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                            <h4 class="text-sm font-medium text-blue-800 mb-1"><?php _e('Tasa BCV', 'ves-converter'); ?></h4>
+                            <h4 class="text-sm font-medium text-blue-800 mb-1"><?php _e('Tasa usd', 'ves-converter'); ?></h4>
                             <p class="text-2xl font-bold text-blue-700">
                                 <?php 
-                                if (!empty($rates) && isset($rates['bcv']) && isset($rates['bcv']['value'])) {
-                                    echo number_format($rates['bcv']['value'], 2);
+                                if (!empty($rates) && isset($rates['usd']) && isset($rates['usd']['value'])) {
+                                    echo number_format($rates['usd']['value'], 2);
                                 } else {
                                     echo 'N/A';
                                 }
@@ -320,8 +320,8 @@ $current_page = $rates_data['current_page'];
                             </p>
                             <p class="text-xs text-blue-600 mt-1">
                                 <?php 
-                                if (!empty($rates) && isset($rates['bcv']) && isset($rates['bcv']['catch_date'])) {
-                                    echo esc_html($rates['bcv']['catch_date']); 
+                                if (!empty($rates) && isset($rates['usd']) && isset($rates['usd']['catch_date'])) {
+                                    echo esc_html($rates['usd']['catch_date']); 
                                 }
                                 ?>
                             </p>
@@ -469,9 +469,9 @@ $current_page = $rates_data['current_page'];
                                     $type_label = '';
                                     
                                     switch ($selected_type) {
-                                        case 'bcv':
+                                        case 'usd':
                                             $badge_color = 'bg-blue-500 text-white border border-blue-600';
-                                            $type_label = 'BCV';
+                                            $type_label = 'usd';
                                             $hover_color = 'hover:bg-blue-50';
                                             break;
                                         case 'average':

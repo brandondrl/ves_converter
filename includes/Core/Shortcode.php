@@ -26,7 +26,7 @@ class Shortcode {
     public function render_converter($atts) {
         // Extract attributes
         $atts = shortcode_atts([
-            'default_rate' => 'bcv', // Default rate type: bcv, average, euro
+            'default_rate' => 'usd', // Default rate type: usd, average, euro
         ], $atts, 'ves_converter');
         
         // Get latest rates
@@ -78,7 +78,7 @@ class Shortcode {
      */
     private function get_latest_rates() {
         $default_rates = [
-            'bcv' => 0,
+            'usd' => 0,
             'average' => 0,
             'euro' => 0
         ];
@@ -91,7 +91,7 @@ class Shortcode {
                 $processed_rates = [];
                 
                 // Extraer los valores de cada tipo de tasa
-                foreach (['bcv', 'euro', 'average', 'custom'] as $rate_type) {
+                foreach (['usd', 'euro', 'average', 'custom'] as $rate_type) {
                     if (isset($rates_data[$rate_type]) && isset($rates_data[$rate_type]['value'])) {
                         $processed_rates[$rate_type] = floatval($rates_data[$rate_type]['value']);
                     }
@@ -130,12 +130,12 @@ class Shortcode {
         // Valores por defecto
         $default_data = [
             'rates' => [
-                'bcv' => 0,
+                'usd' => 0,
                 'average' => 0,
                 'euro' => 0,
                 'custom' => 0
             ],
-            'selected' => 'bcv'
+            'selected' => 'usd'
         ];
         
         // Obtener datos de tasas del modelo
@@ -144,10 +144,10 @@ class Shortcode {
             
             if ($rates) {
                 $processed_rates = [];
-                $selected_type = 'bcv'; // Valor por defecto
+                $selected_type = 'usd'; // Valor por defecto
                 
                 // Extraer los valores de cada tipo de tasa
-                foreach (['bcv', 'euro', 'average', 'custom'] as $rate_type) {
+                foreach (['usd', 'euro', 'average', 'custom'] as $rate_type) {
                     if (isset($rates[$rate_type])) {
                         $processed_rates[$rate_type] = floatval($rates[$rate_type]['value']);
                         
