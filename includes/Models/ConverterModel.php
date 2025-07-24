@@ -94,7 +94,8 @@ class ConverterModel {
         
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
-        
+        error_log('VES Converter API Debug: Raw body: ' . $body);
+        error_log('VES Converter API Debug: Decoded data: ' . print_r($data, true));
         if (!$data || !isset($data['success']) || !$data['success'] || !isset($data['data'])) {
             error_log('VES Converter API Error: Invalid data format received');
             return null;
