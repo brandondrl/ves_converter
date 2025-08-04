@@ -32,7 +32,8 @@ echo "<hr>";
 
 // Probar la función de verificación de horario
 echo "<h3>Testing should_run_update_by_schedule()</h3>";
-$should_run = ConverterModel::should_run_update_by_schedule();
+echo "Note: This function is no longer used since cron runs every 30 minutes without time restrictions<br>";
+$should_run = true; // Always true now
 echo "Should run based on current time: " . ($should_run ? 'Yes' : 'No') . "<br>";
 echo "<hr>";
 

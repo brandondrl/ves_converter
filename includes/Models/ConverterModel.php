@@ -82,7 +82,7 @@ class ConverterModel {
         }
             
         $response = wp_remote_get(self::API_URL);
-        
+       
         if (is_wp_error($response)) {
             $error_message = $response->get_error_message();
             $error_code = $response->get_error_code();
@@ -445,8 +445,8 @@ class ConverterModel {
         return false;
     }
 
-        /**
-     * Método principal que combina verificación de horario y actualización de tasas
+    /**
+     * Método principal que ejecuta la actualización de tasas
      * Este método se llama desde el callback de cron
      * 
      * @return bool|int False si no se actualiza, ID del registro si se creó uno nuevo
@@ -454,19 +454,10 @@ class ConverterModel {
     public static function process_scheduled_update() {
         error_log('VES Converter Cron: Starting scheduled update process at ' . date('Y-m-d H:i:s', current_time('timestamp')));
         
-        // Primero verificar si debemos ejecutar según horario
-        if (!self::should_run_update_by_schedule()) {
-            error_log('VES Converter Cron: Schedule check determined not to run at this time');
-            return false;
-        }
-        
-        error_log('VES Converter Cron: Schedule check passed, proceeding with rate check');
-        
-        // Si pasó la verificación de horario, entonces verificar y actualizar tasas
+        // Ejecutar directamente la verificación y actualización de tasas
         $result = self::check_and_update_rates();
         
         if ($result) {
-            // Registro de éxito
             error_log('VES Converter Cron: Rates updated successfully with ID: ' . $result);
         } else {
             error_log('VES Converter Cron: No rate update performed (no changes or custom rate selected)');

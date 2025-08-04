@@ -52,24 +52,11 @@ class TestRunner {
         // Start logging
         $results['logs'][] = 'Iniciando prueba de actualización de tasas';
         
-        // Test if we're in a scheduled window
-        $current_timestamp = current_time('timestamp');
-        $current_time = date('H:i:s', $current_timestamp);
-        $current_day = intval(date('w', $current_timestamp));
-        
-        $results['diagnostics']['current_time'] = $current_time;
-        $results['diagnostics']['current_day'] = $current_day;
-        $results['diagnostics']['day_name'] = date('l', $current_timestamp);
-        
-        // Check if should run by schedule
-        $should_run = ConverterModel::should_run_update_by_schedule();
-        $results['should_run'] = $should_run;
-        
-        if (!$should_run) {
-            $results['logs'][] = 'La prueba indica que no se debería ejecutar en este momento según el horario configurado';
-        } else {
-            $results['logs'][] = 'La prueba indica que se debería ejecutar en este momento';
-        }
+        // Test schedule verification
+        $results['logs'][] = 'Verificando lógica de horario...';
+        $should_run = true; // Always true now since we simplified the cron
+        $results['logs'][] = 'Schedule check result: ' . ($should_run ? 'Should run' : 'Should not run');
+        $results['logs'][] = 'Note: Cron now runs every 30 minutes without time restrictions';
         
         // Get the next scheduled event
         $next_scheduled = wp_next_scheduled('ves_converter_update_rates_event');
@@ -195,7 +182,7 @@ class TestRunner {
         }
         
         // Reschedule
-        $schedule_result = wp_schedule_event(time(), 'ves_high_frequency', 'ves_converter_update_rates_event');
+        $schedule_result = wp_schedule_event(time(), 'ves_converter_30min', 'ves_converter_update_rates_event');
         
         if ($schedule_result === false) {
             $results['message'] .= '. Error al programar nuevo evento';

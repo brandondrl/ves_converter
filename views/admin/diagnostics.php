@@ -18,8 +18,8 @@ $formatted_next_scheduled = $next_scheduled ? date_i18n('d/m/Y h:i:s A', $next_s
 $current_time = current_time('timestamp');
 $formatted_current_time = date_i18n('d/m/Y h:i:s A', $current_time);
 
-// Check if the current time is within a scheduled window
-$in_schedule_window = ConverterModel::should_run_update_by_schedule();
+// Since we simplified the cron to run every 30 minutes without time restrictions
+$in_schedule_window = true; // Always true now
 
 // Get all cron jobs
 $cron_jobs = _get_cron_array();

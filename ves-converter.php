@@ -41,7 +41,7 @@ function ves_converter_activate() {
     // Programar el cron job si no está ya programado
     if (!wp_next_scheduled('ves_converter_update_rates_event')) {
         // Programar para que se ejecute cada 30 minutos, y el callback decidirá si debe realmente ejecutarse
-        wp_schedule_event(time(), 'ves_high_frequency', 'ves_converter_update_rates_event');
+        wp_schedule_event(time(), 'ves_converter_30min', 'ves_converter_update_rates_event');
     }
 }
 
@@ -80,21 +80,16 @@ function ves_converter_rate_save_callback() {
        
 }
     /**
- * Registra intervalos personalizados de cron basados en hora y día
+ * Registra intervalos personalizados de cron
  * 
  * @param array $schedules Horarios existentes de WordPress
  * @return array Horarios actualizados
  */
 function ves_converter_custom_cron_schedules($schedules) {
-    // Horarios para las diferentes franjas
-    $schedules['ves_high_frequency'] = array(
-        'interval' => 30 * MINUTE_IN_SECONDS,  // Cada 30 minutos (media hora)
-        'display' => __('Cada 30 Minutos (Alta Prioridad)', 'ves-converter')
-    );
-    
-    $schedules['ves_normal_frequency'] = array(
-        'interval' => 15 * MINUTE_IN_SECONDS, // Cada 15 minutos (frecuencia normal)
-        'display' => __('Cada 15 Minutos (Prioridad Normal)', 'ves-converter')
+    // Solo una frecuencia: cada 30 minutos
+    $schedules['ves_converter_30min'] = array(
+        'interval' => 30 * MINUTE_IN_SECONDS,  // Cada 30 minutos
+        'display' => __('Cada 30 Minutos', 'ves-converter')
     );
     
     return $schedules;
