@@ -69,39 +69,64 @@ class ConverterModel {
         return $table_exists;
     }
 
-        /**
+    /**
      * Obtiene los datos crudos de la API (función interna)
      * @return array|null Datos de la API o null en caso de error
      */
     private static function fetch_api_data($force_refresh = false) {
-        static $cached_response = null;
+        static $cached_response = null;        
+        // Log para debug
+        error_log('VES Converter: Intentando conectar a: ' . self::API_URL);
+        error_log('VES Converter: Desde servidor: ' . $_SERVER['HTTP_HOST'] ?? 'unknown');
         
         // Si tenemos respuesta cacheada y no se fuerza actualización
         if ($cached_response !== null && !$force_refresh) {
             return $cached_response;
         }
+        
+        // Configurar argumentos para wp_remote_get
+        $args = array(
+            'timeout' => 30,
+            'sslverify' => true,  // Mantener verificación SSL
+            'headers' => array(
+                'Accept' => 'application/json',
+            )
+        );
             
-        $response = wp_remote_get(self::API_URL);
-       
+        $response = wp_remote_get(self::API_URL, $args);
+        
+        // Log de la respuesta completa para debug
+        error_log('VES Converter: Response object: ' . print_r($response, true));
+        
         if (is_wp_error($response)) {
             $error_message = $response->get_error_message();
             $error_code = $response->get_error_code();
-            error_log("VES Converter API Error: Code - $error_code, Message - $error_message");
-
-
-            return null;
+            error_log('VES Converter: Error en wp_remote_get - ' . $error_code . ': ' . $error_message);
+            return false;
         }
         
+        $status_code = wp_remote_retrieve_response_code($response);
         $body = wp_remote_retrieve_body($response);
-        $data = json_decode($body, true);
-        error_log('VES Converter API Debug: Raw body: ' . $body);
-        error_log('VES Converter API Debug: Decoded data: ' . print_r($data, true));
-        if (!$data || !isset($data['success']) || !$data['success'] || !isset($data['data'])) {
-            error_log('VES Converter API Error: Invalid data format received');
-            return null;
+        
+        error_log('VES Converter: Status Code: ' . $status_code);
+        error_log('VES Converter: Response Body: ' . substr($body, 0, 500));
+        
+        if ($status_code !== 200) {
+            error_log('VES Converter: Error - Status code no es 200: ' . $status_code);
+            return false;
         }
-            
-        // Cachear respuesta para esta ejecución
+        
+        $data = json_decode($body, true);
+        if (!$data) {
+            error_log('VES Converter: Error - No se pudo decodificar JSON');
+            return false;
+        }
+        
+        if (!isset($data['success']) || !$data['success']) {
+            error_log('VES Converter: Error - API no retornó success: ' . print_r($data, true));
+            return false;
+        }
+        
         $cached_response = $data;
         return $data;
     }
@@ -360,6 +385,16 @@ class ConverterModel {
             // Calcular el porcentaje de cambio
             $change_percentage = abs(($api_value - $db_value) / $db_value * 100);
             
+            // Log específico para Binance (más volátil)
+            if ($selected_type === 'binance') {
+                error_log(sprintf(
+                    'VES Converter Binance: Verificando cambio - API: %.2f, DB: %.2f, Cambio: %.4f%%, Umbral: 0.0095%%',
+                    $api_value,
+                    $db_value,
+                    $change_percentage
+                ));
+            }
+            
            // Si el cambio es mayor al 0.009% (0.00009 en decimal), considerar que hay un cambio significativo
             if ($change_percentage > 0.000095) {
                 error_log(sprintf(
@@ -369,6 +404,15 @@ class ConverterModel {
                     $db_value,
                     $change_percentage
                 ));
+                
+                // Log específico para Binance cuando se actualiza
+                if ($selected_type === 'binance') {
+                    error_log(sprintf(
+                        'VES Converter Binance: ACTUALIZANDO - Nueva tasa: %.2f (cambio de %.2f%%)',
+                        $api_value,
+                        $change_percentage
+                    ));
+                }
                 
                 // Guardar el nuevo registro manteniendo la selección actual
                 return self::store_rate_record($api_rates, $selected_type);
@@ -380,68 +424,19 @@ class ConverterModel {
                     $db_value,
                     $change_percentage
                 ));
-            }
-        }
-        
-        // No hay cambios en las tasas
-        return false;
-    }
-
-    /**
-     * Verifica si se deben actualizar las tasas según el horario actual
-     * 
-     * @return bool True si se debe ejecutar la actualización, False si no
-     */
-    public static function should_run_update_by_schedule() {
-        // Verificar día de la semana (no ejecutar en fin de semana)
-        $current_timestamp = current_time('timestamp');
-        $current_day = intval(date('w', $current_timestamp)); // 0 (domingo) a 6 (sábado)
-        
-        if ($current_day === 0 || $current_day === 6) {
-            error_log('VES Converter: Skipping rate update - weekend day detected: ' . $current_day);
-            return false;
-        }
-        
-        // Obtener hora actual (formato 24h) y minuto actual
-        $current_hour = intval(date('G', $current_timestamp));
-        $current_minute = intval(date('i', $current_timestamp));
-        $current_time_minutes = ($current_hour * 60) + $current_minute;
-        
-        // Verificar si la tasa seleccionada es 'average' y es antes de las 9am
-        $latest_rates = self::get_latest_rates();
-        if ($latest_rates) {
-            foreach ($latest_rates as $type => $data) {
-                if (isset($data['selected']) && $data['selected'] && $type === 'average') {
-                    if ($current_hour < 9) {
-                        error_log('VES Converter: Skipping rate update - average rate selected and before 9am');
-                        return false;
-                    }
-                    break;
+                
+                // Log específico para Binance cuando no hay cambio
+                if ($selected_type === 'binance') {
+                    error_log(sprintf(
+                        'VES Converter Binance: Sin cambios - Tasa estable en %.2f (cambio: %.4f%%)',
+                        $api_value,
+                        $change_percentage
+                    ));
                 }
             }
         }
         
-        // Definir las 6 horas específicas de ejecución (en minutos desde medianoche)
-        $execution_times = [
-            8 * 60 + 45,  // 8:45 AM
-            9 * 60 + 20,  // 9:20 AM
-            10 * 60,      // 10:00 AM
-            12 * 60 + 45, // 12:45 PM
-            13 * 60 + 20, // 1:20 PM
-            14 * 60,      // 2:00 PM
-        ];
-        
-        // Verificar si estamos en uno de los momentos específicos de ejecución
-        // Permitir un margen de +/- 15 minutos para compensar retrasos y frecuencia del cron
-        foreach ($execution_times as $time) {
-            if (abs($current_time_minutes - $time) <= 15) {
-                error_log('VES Converter: Running update - scheduled time detected: ' . date('H:i', $current_timestamp));
-                return true;
-            }
-        }
-        
-        // No es una hora programada para ejecución
-        error_log('VES Converter: Skipping update - not a scheduled execution time: ' . date('H:i', $current_timestamp));
+        // No hay cambios en las tasas
         return false;
     }
 
@@ -454,13 +449,40 @@ class ConverterModel {
     public static function process_scheduled_update() {
         error_log('VES Converter Cron: Starting scheduled update process at ' . date('Y-m-d H:i:s', current_time('timestamp')));
         
+        // Obtener la tasa seleccionada actual para logs específicos
+        $latest_rates = self::get_latest_rates();
+        $selected_type = null;
+        if ($latest_rates) {
+            foreach ($latest_rates as $type => $data) {
+                if (isset($data['selected']) && $data['selected']) {
+                    $selected_type = $type;
+                    break;
+                }
+            }
+        }
+        
+        // Log específico para Binance
+        if ($selected_type === 'binance') {
+            error_log('VES Converter Binance Cron: Iniciando verificación de cambios en tasa Binance');
+        }
+        
         // Ejecutar directamente la verificación y actualización de tasas
         $result = self::check_and_update_rates();
         
         if ($result) {
             error_log('VES Converter Cron: Rates updated successfully with ID: ' . $result);
+            
+            // Log específico para Binance cuando se actualiza
+            if ($selected_type === 'binance') {
+                error_log('VES Converter Binance Cron: Tasa Binance actualizada exitosamente con ID: ' . $result);
+            }
         } else {
             error_log('VES Converter Cron: No rate update performed (no changes or custom rate selected)');
+            
+            // Log específico para Binance cuando no hay cambios
+            if ($selected_type === 'binance') {
+                error_log('VES Converter Binance Cron: Sin cambios en tasa Binance - no se requiere actualización');
+            }
         }
         
         return $result;
