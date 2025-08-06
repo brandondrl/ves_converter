@@ -377,66 +377,51 @@ class ConverterModel {
             return false;
         }
         
-        // 4. Comparar las tasas para ver si hay cambios
-        if (isset($api_rates[$selected_type]['value']) && isset($latest_rates[$selected_type]['value'])) {
-            $api_value = (float)$api_rates[$selected_type]['value'];
-            $db_value = (float)$latest_rates[$selected_type]['value'];
-            
-            // Calcular el porcentaje de cambio
-            $change_percentage = abs(($api_value - $db_value) / $db_value * 100);
-            
-            // Log específico para Binance (más volátil)
-            if ($selected_type === 'binance') {
-                error_log(sprintf(
-                    'VES Converter Binance: Verificando cambio - API: %.2f, DB: %.2f, Cambio: %.4f%%, Umbral: 0.0095%%',
-                    $api_value,
-                    $db_value,
-                    $change_percentage
-                ));
-            }
-            
-           // Si el cambio es mayor al 0.009% (0.00009 en decimal), considerar que hay un cambio significativo
-            if ($change_percentage > 0.000095) {
-                error_log(sprintf(
-                    'VES Converter: Cambio significativo detectado en tasa %s - API: %.2f, DB: %.2f, Cambio: %.2f%%',
-                    $selected_type,
-                    $api_value,
-                    $db_value,
-                    $change_percentage
-                ));
-                
-                // Log específico para Binance cuando se actualiza
-                if ($selected_type === 'binance') {
-                    error_log(sprintf(
-                        'VES Converter Binance: ACTUALIZANDO - Nueva tasa: %.2f (cambio de %.2f%%)',
-                        $api_value,
-                        $change_percentage
-                    ));
-                }
-                
-                // Guardar el nuevo registro manteniendo la selección actual
-                return self::store_rate_record($api_rates, $selected_type);
-            } else {
-                error_log(sprintf(
-                    'VES Converter: No hay cambio significativo en la tasa %s - API: %.2f, DB: %.2f, Cambio: %.2f%%',
-                    $selected_type,
-                    $api_value,
-                    $db_value,
-                    $change_percentage
-                ));
-                
-                // Log específico para Binance cuando no hay cambio
-                if ($selected_type === 'binance') {
-                    error_log(sprintf(
-                        'VES Converter Binance: Sin cambios - Tasa estable en %.2f (cambio: %.4f%%)',
-                        $api_value,
-                        $change_percentage
-                    ));
-                }
-            }
+        // 4. Verificar que tenemos datos válidos de la API
+        if (!isset($api_rates[$selected_type]['value'])) {
+            error_log('VES Converter: No se encontró el valor de la tasa ' . $selected_type . ' en la respuesta de la API');
+            return false;
         }
         
-        // No hay cambios en las tasas
+        // 5. Comparar las tasas para ver si hay cambios
+        $api_value = (float)$api_rates[$selected_type]['value'];
+        $db_value = (float)$latest_rates[$selected_type]['value'];
+        
+        // Calcular el porcentaje de cambio
+        $change_percentage = abs(($api_value - $db_value) / $db_value * 100);
+        
+        // Log para todas las tasas
+        error_log(sprintf(
+            'VES Converter: Verificando cambio en tasa %s - API: %.2f, DB: %.2f, Cambio: %.4f%%, Umbral: 0.0095%%',
+            $selected_type,
+            $api_value,
+            $db_value,
+            $change_percentage
+        ));
+        
+        // Si el cambio es mayor al 0.0095%, considerar que hay un cambio significativo
+        if ($change_percentage > 0.000095) {
+            error_log(sprintf(
+                'VES Converter: Cambio significativo detectado en tasa %s - API: %.2f, DB: %.2f, Cambio: %.2f%% - GUARDANDO',
+                $selected_type,
+                $api_value,
+                $db_value,
+                $change_percentage
+            ));
+            
+            // Guardar el nuevo registro manteniendo la selección actual
+            return self::store_rate_record($api_rates, $selected_type);
+        } else {
+            error_log(sprintf(
+                'VES Converter: No hay cambio significativo en la tasa %s - API: %.2f, DB: %.2f, Cambio: %.2f%% - NO SE GUARDA',
+                $selected_type,
+                $api_value,
+                $db_value,
+                $change_percentage
+            ));
+        }
+        
+        // No hay cambios significativos en las tasas
         return false;
     }
 
