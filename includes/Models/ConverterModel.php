@@ -171,14 +171,22 @@ class ConverterModel {
      * @return int|false ID del registro insertado o false si hay error
      */
     public static function store_rate_record($rates, $selected_type = 'usd', $custom_rate = 0) {
+        error_log('VES Converter: === INICIANDO GUARDADO DE REGISTRO ===');
+        error_log('VES Converter: Tasa seleccionada para guardar: ' . $selected_type);
+        
         global $wpdb;
         $table_name = self::get_table_name();
         $current_time = current_time('mysql');
         
+        error_log('VES Converter: Tabla a usar: ' . $table_name);
+        
         // Asegurar que la tabla existe
         if (!self::ensure_table_exists()) {
+            error_log('VES Converter: ERROR - No se pudo asegurar que la tabla existe');
             return false;
         }
+        
+        error_log('VES Converter: Tabla verificada correctamente');
         
         // Usar directamente la zona horaria de WordPress en lugar de ajustes manuales
         $formatted_date = date_i18n('d/m/Y h:i:s A', current_time('timestamp'));
@@ -212,6 +220,9 @@ class ConverterModel {
             )
         );
         
+        error_log('VES Converter: Datos procesados correctamente');
+        error_log('VES Converter: JSON a insertar: ' . json_encode($processed_rates));
+        
         // Insertar en la base de datos
         $result = $wpdb->insert(
             $table_name,
@@ -224,11 +235,15 @@ class ConverterModel {
         );
         
         if ($result === false) {
-            error_log("VES Converter Database Error: " . $wpdb->last_error);
+            error_log("VES Converter: ERROR - Falló la inserción en la base de datos: " . $wpdb->last_error);
             return false;
         }
         
-        return $wpdb->insert_id;
+        $insert_id = $wpdb->insert_id;
+        error_log('VES Converter: REGISTRO INSERTADO EXITOSAMENTE con ID: ' . $insert_id);
+        error_log('VES Converter: === FINALIZANDO GUARDADO DE REGISTRO ===');
+        
+        return $insert_id;
     }
 
         /**
@@ -302,7 +317,7 @@ class ConverterModel {
      */
     public static function get_latest_rates() {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'ves_converter_rates';
+        $table_name = self::get_table_name();
      
         $result = $wpdb->get_row(
             "SELECT rates FROM $table_name ORDER BY id DESC LIMIT 1"
@@ -339,11 +354,16 @@ class ConverterModel {
      * @return bool|int False si no hay cambios o error, ID del nuevo registro si se guardó
      */
     public static function check_and_update_rates() {
+        error_log('VES Converter: === INICIANDO VERIFICACIÓN DE CAMBIOS ===');
+        
         // 1. Obtener el último registro guardado
         $latest_rates = self::get_latest_rates();
         if (!$latest_rates) {
+            error_log('VES Converter: ERROR - No hay registros previos en la base de datos');
             return false; // No hay registros previos
         }
+        
+        error_log('VES Converter: Último registro obtenido correctamente');
         
         // 2. Determinar cuál es la tasa seleccionada actual
         $selected_type = null;
@@ -361,9 +381,11 @@ class ConverterModel {
         
         // Si no se encontró una tasa seleccionada, no proceder
         if ($selected_type === null) {
-            error_log('VES Converter: No se encontró una tasa seleccionada en el último registro');
+            error_log('VES Converter: ERROR - No se encontró una tasa seleccionada en el último registro');
             return false;
         }
+        
+        error_log('VES Converter: Tasa seleccionada encontrada: ' . $selected_type);
         
         if ($is_custom_selected) {
             error_log('VES Converter: No se actualizará automáticamente porque hay una tasa personalizada seleccionada');
@@ -371,15 +393,18 @@ class ConverterModel {
         }
         
         // 3. Obtener tasas actuales de la API
+        error_log('VES Converter: Obteniendo tasas desde la API...');
         $api_rates = self::get_rates_from_api();
         if ($api_rates === null) {
-            error_log('VES Converter: Error al obtener tasas desde la API');
+            error_log('VES Converter: ERROR - Error al obtener tasas desde la API');
             return false;
         }
         
+        error_log('VES Converter: Tasas de API obtenidas correctamente');
+        
         // 4. Verificar que tenemos datos válidos de la API
         if (!isset($api_rates[$selected_type]['value'])) {
-            error_log('VES Converter: No se encontró el valor de la tasa ' . $selected_type . ' en la respuesta de la API');
+            error_log('VES Converter: ERROR - No se encontró el valor de la tasa ' . $selected_type . ' en la respuesta de la API');
             return false;
         }
         
@@ -402,7 +427,7 @@ class ConverterModel {
         // Si el cambio es mayor al 0.0095%, considerar que hay un cambio significativo
         if ($change_percentage > 0.000095) {
             error_log(sprintf(
-                'VES Converter: Cambio significativo detectado en tasa %s - API: %.2f, DB: %.2f, Cambio: %.2f%% - GUARDANDO',
+                'VES Converter: CAMBIO SIGNIFICATIVO DETECTADO en tasa %s - API: %.2f, DB: %.2f, Cambio: %.2f%% - INICIANDO GUARDADO',
                 $selected_type,
                 $api_value,
                 $db_value,
@@ -410,7 +435,15 @@ class ConverterModel {
             ));
             
             // Guardar el nuevo registro manteniendo la selección actual
-            return self::store_rate_record($api_rates, $selected_type);
+            $result = self::store_rate_record($api_rates, $selected_type);
+            
+            if ($result) {
+                error_log('VES Converter: REGISTRO GUARDADO EXITOSAMENTE con ID: ' . $result);
+            } else {
+                error_log('VES Converter: ERROR - Falló al guardar el registro en la base de datos');
+            }
+            
+            return $result;
         } else {
             error_log(sprintf(
                 'VES Converter: No hay cambio significativo en la tasa %s - API: %.2f, DB: %.2f, Cambio: %.2f%% - NO SE GUARDA',
@@ -420,6 +453,8 @@ class ConverterModel {
                 $change_percentage
             ));
         }
+        
+        error_log('VES Converter: === FINALIZANDO VERIFICACIÓN DE CAMBIOS ===');
         
         // No hay cambios significativos en las tasas
         return false;
